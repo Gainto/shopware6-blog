@@ -8,7 +8,7 @@ categories:
 - shopbetreiber
 ---
 
-**Ab der Version 6.5.5.0** gibt es ein neues, optionales Bestands Handling, welches es ermöglicht per E-Mail benachrichtigt zu werden, wenn der Bestand eines Produkts einen vordefinierten Schwellenwert unterschreitet.
+**Ab der Version 6.5.5.0** gibt es ein neues, optionales Bestands Handling, welches es unter anderem (mit einen kleinen Trick) ermöglicht per E-Mail benachrichtigt zu werden, wenn der Bestand eines Produkts einen vordefinierten Schwellenwert unterschreitet.
   
 Das Besondere dabei: Diese Funktion lässt sich ohne den Einsatz kostenpflichtiger Drittanbieter-Plug-Ins realisieren.  
 
