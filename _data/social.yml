@@ -1,0 +1,9 @@
+- title: Email
+  url: mailto:hello@jeffblock.de
+  icon: fas fa-envelope
+- title: Twitter
+  url: https://twitter.com/block_jeff
+  icon: fab fa-twitter
+- title: GitHub
+  url: https://github.com/gainto
+  icon: fab fa-github
