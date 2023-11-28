@@ -17,7 +17,7 @@ jobs:
       run: |
         docker run \
         -v ${{ github.workspace }}:/srv/jekyll -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
-        jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
+        jekyll/builder:4.3.2 /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
 
     - name: Deploy website
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
