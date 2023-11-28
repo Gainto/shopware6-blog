@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="de">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="/assets/css/normalize.css"/>
+    <link rel="stylesheet" href="/assets/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="/assets/css/open-color.css"/>
+    <link rel="stylesheet" href="/assets/css/quartz.css"/>
+    <link rel="stylesheet" href="/assets/css/custom.css"/>
+
+    <script async src="https://use.fontawesome.com/releases/v6.0.0/js/all.js"></script>
+
+    <link href='http://fonts.googleapis.com/css?family=Tangerine|Sintony:400,700' rel='stylesheet' type='text/css'>
+
+    
+</head>
+
+  <body>
+    <div class="wrapper">
+
+      
+        <header class="site-header outer">
+  <div class="inner">
+    <div class="site-header-small-content">
+      <h4 class="site-title">
+        <a href="/">Shopware6 knowledge base</a>
+      </h4>
+      
+        <nav class="nav">
+          
+            <a class="nav-item " href="/">
+              Home
+            </a>
+          
+            <a class="nav-item " href="/plugins">
+              Plug-Ins
+            </a>
+          
+            <a class="nav-item " href="https://jeffblock.de">
+              About <i class="fa fa-external-link" aria-hidden="true"></i>
+            </a>
+          
+        </nav>
+      
+    </div>
+  </div>
+</header>
+
+      
+
+      <main class="main outer">
+        <div class="inner">
+          <article class="post">
+  <div class="post-meta post-meta-top">
+    <div>
+      <time datetime="2023-10-15T21:37:56+02:00">
+        <i class="fa-solid fa-calendar-days"></i> 15 Oct 2023
+      </time></div>
+    
+    
+      <nav class="post-categories">
+        <i class="fa-solid fa-folder"></i>
+        
+          
+            <span>entwickler</span> /
+          
+        
+      </nav>
+    
+  </div>
+
+  <h1 class="post-title">EntityRepository dynamisch anhand eines Namens laden</h1>
+
+  
+    <figure class="post-cover" style="background-image: url(/assets/images/repo-reload.png)">
+    </figure>
+  
+
+  <div class="post-content">
+    <p>Jede Entität in Shopware hat ein Repository.
+Die <code class="language-plaintext highlighter-rouge">ProductEntity</code> kann mit einem <code class="language-plaintext highlighter-rouge">ProductRepository</code> geladen werden, die <code class="language-plaintext highlighter-rouge">CustomerEntity</code> kann mit einem <code class="language-plaintext highlighter-rouge">CustomerRepository</code> geladen werden, etc.</p>
+
+<p>Wenn ein Service oder eine Klasse nun spezifische Entitäten laden muss, wird das jeweilige Repository über die <code class="language-plaintext highlighter-rouge">services.xml</code> bzw <code class="language-plaintext highlighter-rouge">services.yml</code> injected.</p>
+
+<p>Was ist aber, wenn du zum Zeitpunkt des injectens noch gar nicht weißt, welche Entität du benötigst und du zusätzlich keinen compilerPass verwenden möchtest?</p>
+
+<p>In dem Fall, kannst du dynamisch das benötigte repository laden, und das geht so:</p>
+
+<p>Wir nutzen die <code class="language-plaintext highlighter-rouge">DefinitionInstanceRegistry</code> und laden das repository. Die Registry benötigt dazu nur den Namen der Entity. Dieser kann entweder direkt angegeben, oder aber über ein Entity-Objekt geholt werden.</p>
+
+<p>Ich nutze diese Methode z.B. zum eine Entität mit weiteren Associations neu zu laden. Damit ich nicht für jede Entität eine eigene Methode schreiben muss, nimmt meine Methode einfach die Entität entgegen und lädt sich auf Basis des Namens das benötigte Repository. Anschließend werden die Associations hinzugefügt, mittels DAL die Entität neu geladen und zurückgegeben.</p>
+
+<p>Das ganze sieht dann so aus:</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">private</span> <span class="k">function</span> <span class="n">reloadEntityWithAssociations</span><span class="p">(</span>
+    <span class="kt">Entity</span> <span class="nv">$entity</span><span class="p">,</span>
+    <span class="kt">array</span> <span class="nv">$associations</span><span class="p">,</span>
+    <span class="kt">DefinitionInstanceRegistry</span> <span class="nv">$registry</span><span class="p">,</span>
+    <span class="kt">Context</span> <span class="nv">$context</span>
+<span class="p">)</span> <span class="p">:</span> <span class="kt">Entity</span><span class="p">{</span>
+
+    <span class="cd">/** @var string $entityName */</span>
+    <span class="nv">$entityName</span> <span class="o">=</span> <span class="p">(</span><span class="nv">$registry</span><span class="o">-&gt;</span><span class="nf">getByEntityClass</span><span class="p">(</span><span class="nv">$entity</span><span class="p">))</span><span class="o">-&gt;</span><span class="nf">getEntityName</span><span class="p">();</span>
+
+    <span class="cd">/** @var EntityRepositoryInterface $repo */</span>
+    <span class="nv">$repo</span> <span class="o">=</span> <span class="nv">$registry</span><span class="o">-&gt;</span><span class="nf">getRepository</span><span class="p">(</span><span class="nv">$entityName</span><span class="p">);</span>
+
+    <span class="nv">$criteria</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Criteria</span><span class="p">();</span>
+    <span class="nv">$criteria</span><span class="o">-&gt;</span><span class="nf">addFilter</span><span class="p">(</span><span class="k">new</span> <span class="nc">EqualsFilter</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="nv">$entity</span><span class="o">-&gt;</span><span class="nf">getId</span><span class="p">()));</span>
+    <span class="nv">$criteria</span><span class="o">-&gt;</span><span class="nf">addAssociations</span><span class="p">(</span><span class="nv">$associations</span><span class="p">);</span>
+    <span class="nv">$criteria</span><span class="o">-&gt;</span><span class="nf">setLimit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="nv">$repo</span><span class="o">-&gt;</span><span class="nf">search</span><span class="p">(</span><span class="nv">$criteria</span><span class="p">,</span> <span class="nv">$context</span><span class="p">))</span><span class="o">-&gt;</span><span class="nf">first</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+  </div>
+
+  
+</article>
+
+<aside class="pagination post-pagination">
+  
+    <a class="prev post-prev" href="/entwickler/2023/10/08/expted-input-to-be-non-empty.html">
+      <i class="fas fa-chevron-left"></i> <span class="">Expected input to be non empty non associative array.
+</span>
+    </a>
+  
+  
+  
+    <a class="next post-next" href="/entwickler/shopbetreiber/2023/10/22/shopware-yaml-konfiguration.html">
+      <span class="">Shopware.yaml Konfigurationsmöglichkeiten
+</span> <i class="fas fa-chevron-right"></i> 
+    </a>
+  
+</aside>
+
+
+
+        </div>
+      </main>
+
+      <footer class="footer outer">
+  <div class="inner">
+    <div class="columns">
+      <p class="column">
+        &copy; <time datetime="2023-11-28T23:22:02+01:00">2023</time>. All rights reserved.
+      </p>
+  
+      <p class="column">
+        Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> & <a href="https://github.com/vfvong/jekyll-theme-quartz" target="_blank">Quartz</a>
+      </p>
+  
+      
+      <p class="column">
+        Nützliches Wissen, Helfer und Quick-Tipps rund um Shopware6
+      </p>
+      
+
+      
+      <div class="column social">
+        
+          <a href="mailto:hello@jeffblock.de" target="_blank">
+            <i class="fas fa-envelope" title="Email"></i>
+          </a>
+        
+          <a href="https://twitter.com/block_jeff" target="_blank">
+            <i class="fab fa-twitter" title="Twitter"></i>
+          </a>
+        
+          <a href="https://github.com/gainto" target="_blank">
+            <i class="fab fa-github" title="GitHub"></i>
+          </a>
+        
+      </div>
+      
+    </div>      
+  </div>
+</footer>
+
+    </div>
+
+    
+
+    
+  </body>
+</html>

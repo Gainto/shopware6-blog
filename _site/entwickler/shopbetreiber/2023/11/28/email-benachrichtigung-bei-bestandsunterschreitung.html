@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="de">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="/assets/css/normalize.css"/>
+    <link rel="stylesheet" href="/assets/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="/assets/css/open-color.css"/>
+    <link rel="stylesheet" href="/assets/css/quartz.css"/>
+    <link rel="stylesheet" href="/assets/css/custom.css"/>
+
+    <script async src="https://use.fontawesome.com/releases/v6.0.0/js/all.js"></script>
+
+    <link href='http://fonts.googleapis.com/css?family=Tangerine|Sintony:400,700' rel='stylesheet' type='text/css'>
+
+    
+</head>
+
+  <body>
+    <div class="wrapper">
+
+      
+        <header class="site-header outer">
+  <div class="inner">
+    <div class="site-header-small-content">
+      <h4 class="site-title">
+        <a href="/">Shopware6 knowledge base</a>
+      </h4>
+      
+        <nav class="nav">
+          
+            <a class="nav-item " href="/">
+              Home
+            </a>
+          
+            <a class="nav-item " href="/plugins">
+              Plug-Ins
+            </a>
+          
+            <a class="nav-item " href="https://jeffblock.de">
+              About <i class="fa fa-external-link" aria-hidden="true"></i>
+            </a>
+          
+        </nav>
+      
+    </div>
+  </div>
+</header>
+
+      
+
+      <main class="main outer">
+        <div class="inner">
+          <article class="post">
+  <div class="post-meta post-meta-top">
+    <div>
+      <time datetime="2023-11-28T22:00:00+01:00">
+        <i class="fa-solid fa-calendar-days"></i> 28 Nov 2023
+      </time></div>
+    
+    
+      <nav class="post-categories">
+        <i class="fa-solid fa-folder"></i>
+        
+          
+            <span>entwickler</span> /
+          
+        
+          
+            <span>shopbetreiber</span> /
+          
+        
+      </nav>
+    
+  </div>
+
+  <h1 class="post-title">E-Mail Benachrichtigung bei Bestandsunterschreitung (OHNE PLUGIN)</h1>
+
+  
+    <figure class="post-cover" style="background-image: url(/assets/images/bestand_flow.png)">
+    </figure>
+  
+
+  <div class="post-content">
+    <p><strong>Ab der Version 6.5.5.0</strong> gibt es ein neues, optionales Bestands Handling, welches es ermöglicht per E-Mail benachrichtigt zu werden, wenn der Bestand eines Produkts einen vordefinierten Schwellenwert unterschreitet.</p>
+
+<p>Das Besondere dabei: Diese Funktion lässt sich ohne den Einsatz kostenpflichtiger Drittanbieter-Plug-Ins realisieren.</p>
+
+<p><strong>Hintergrund: Warum ab Shopware 6.5.5.0?</strong></p>
+
+<p>Die bisherige Praxis, Bestandsbenachrichtigungen über kostenpflichtige Plug-Ins abzuwickeln, wird nun durch einen raffinierte “Trick” mit den nativen Bordmitteln von Shopware ersetzt.</p>
+
+<p>Die Vorgehensweise von Shopware im Umgang mit dem Lagerbestand mag auf den ersten Blick kompliziert erscheinen.<br />
+Jedes Produkt verfügt über zwei Felder, den <strong>Lagerbestand</strong> und den <strong>Verfügbaren Lagerbestand</strong>.<br />
+Bei einer Bestellung wird nicht, wie angenommen, der Lagerbestand, sondern der verfügbare Lagerbestand reduziert.<br />
+Dies ermöglicht es, das Produkt weiterhin als “reserviert” zu betrachten, während der eigentliche Lagerbestand erst nach Abschluss der Bestellung sinkt.</p>
+
+<p>Diese Herangehensweise ist zwar sinnvoll, aber für viele Shopbetreiber verwirrend.<br />
+Hinzu kommt, dass nicht überall auf die Variable zugegriffen werden konnte, die den “tatsächlichen” Bestand anzeigt.<br />
+Wenn die hier erklärte Vorgehensweise in einer älteren Shopware Version genutzt wird, kann nur der reservierte- aber nicht der reale Lagerbestand kontrolliert werden.<br />
+Nach Rückmeldungen aus der Community hat Shopware das System überarbeitet: In der überarbeiteten Version repräsentiert der Lagerbestand den Echtzeit-Lagerbestand.</p>
+
+<p><strong>Was bedeutet das für Shopbetreiber?</strong></p>
+
+<p>Mit dem neuen Bestands-Handling, optional verfügbar ab Version 6.5.5.0 und ab Version 6.6.0.0 zum Standard, können Shopbetreiber nun direkt auf den Echtzeit-Bestand zugreifen. Dies eröffnet die Möglichkeit, den Shopbetreiber automatisch zu benachrichtigen, wenn der Bestand eines Produkts einen vordefinierten Wert erreicht oder unterschreitet.</p>
+
+<hr />
+
+<p><strong>In folgendem erkläre ich in 5 Schritten die Konfiguration der Bestandsbenachrichtigungs-E-Mail + Aktivierung des neuen Bestand Systems:</strong></p>
+
+<h2 id="1-neues-bestands-handling-system-aktvieren">1. Neues Bestands-Handling-System aktvieren</h2>
+<p>Um das neue System zu finden, verbinden wir uns mit SSH oder FTP auf den Server, auf dem der Shop liegt und öffnen die <code class="language-plaintext highlighter-rouge">&lt;ShopInstallation&gt;/.env</code> Datei.<br />
+   hier fügen wir folgende Zeile ans Ende hinzu, bevor wir die Datei abspeichern und wieder schließen: <code class="language-plaintext highlighter-rouge">STOCK_HANDLING=1</code><br />
+   Wunderbar, das neue Stock Handling System ist jetzt aktiv.</p>
+<h2 id="2-neue-regel-anlegen">2. Neue Regel anlegen</h2>
+<p>Als nächstes benötigen wir eine Regel, die greift, wenn ein Produkt einen gewissen Lagerbestand erreicht oder unterschreitet.<br />
+   Im Admin navigieren wir zu <code class="language-plaintext highlighter-rouge">Einstellungen &gt; Shop &gt; Rule Builder &gt; Neue Regel</code>.<br />
+   Gib der Regel einen passenden Namen, wie “Lagerbestand kleiner 5” und setze die Priorität auf 100.<br />
+   Bei den Bedingungen wählen wir nun aus:<br />
+   <code class="language-plaintext highlighter-rouge">Position mit Lagerbestand | Mind. eine | Ist kleiner/gleich | 5</code><br />
+   Die 5 ersetzt du natürlich mit dem Wert, bei dem du benachrichtigt werden möchtest.<br />
+   Nun können wir die Regel speichern und mit dem nächsten Schritt weiter machen.<br />
+	 <img src="/assets/images/bestand_rule.png" alt="" /></p>
+
+<h2 id="3-mail-template-kopieren--anpassen">3. Mail-Template kopieren &amp; anpassen</h2>
+<p>Immer dann, wenn eine Bestellung aufgegbeben wird, wird der Lagerbestand der jeweiligen Produkte abgezogen.<br />
+   Wenn eine Bestellung aufgebeben wird, wird ebenso eine Bestellbestätigung rausgesendet.<br />
+   Da wir im nächsten Schritt genau an dieser Stelle eingreifen, macht es Sinn, das Bestellbestätigungs Mail-Template als Basis zu nutzen.<br />
+   Navigiere zu <code class="language-plaintext highlighter-rouge">Einstellungen &gt; Shop &gt; E-Mail Templates</code> und kopiere das <code class="language-plaintext highlighter-rouge">Order confirmation</code> Template.<br />
+   Öffne das duplizierte Template und schreib in die Beschreibung “Bestandsbenachrichtigung”, sodass du es später von der Bestellbestätigung Unterscheiden kannst.<br />
+   Wähle einen passenden Betreff (z.B. Bestandsbenachrichtigung) und scrolle weiter runter zu den Mail Texten.</p>
+
+<p><img src="/assets/images/bestand_mail1.png" alt="" /></p>
+
+<p>Mittels <code class="language-plaintext highlighter-rouge">{{ lineItem.payload.stock }}</code> können wir auf den Lagerbestand der jeweiligen Produkte zurückgreifen.<br />
+Ein minimalistisches Mail Template könnte folgendermaßen aussehen:<br />
+<img src="/assets/images/bestand_mail2.png" alt="" /></p>
+
+<p>Text:</p>
+
+<div class="language-twig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">{%</span> <span class="k">for</span> <span class="nv">lineItem</span> <span class="ow">in</span> <span class="nv">order.lineItems</span> <span class="cp">%}</span>
+<span class="cp">{%</span> <span class="k">if</span> <span class="nv">lineItem.payload.stock</span> <span class="o">==</span> <span class="nv">0</span> <span class="err">|</span><span class="o">| </span><span class="nf">lineItem</span><span class="err">.</span><span class="nv">payload.stock</span> <span class="o">&lt;</span> <span class="nv">5</span><span class="cp">%}{{</span> <span class="nv">lineItem.label</span>  <span class="cp">}}</span> <span class="cp">{%</span> <span class="k">if</span> <span class="nv">lineItem.payload.productNumber</span> <span class="ow">is</span> <span class="nb">defined</span> <span class="cp">%}</span>(<span class="cp">{{</span> <span class="nv">lineItem.payload.productNumber</span><span class="o">|</span><span class="nf">u</span><span class="err">.</span><span class="nv">wordwrap</span><span class="p">(</span><span class="nv">80</span><span class="p">)</span> <span class="cp">}}</span>)<span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span>: <span class="cp">{{</span> <span class="nv">lineItem.payload.stock</span>  <span class="cp">}}</span> )<span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span>
+<span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
+</code></pre></div></div>
+
+<p>HTML:</p>
+
+<div class="language-twig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;div</span> <span class="na">style=</span><span class="s">"font-family:arial; font-size:12px;"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;table</span> <span class="na">border=</span><span class="s">"0"</span> <span class="na">style=</span><span class="s">"font-family:Arial, Helvetica, sans-serif; font-size:12px;"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;tr&gt;</span>
+            <span class="nt">&lt;td</span> <span class="na">bgcolor=</span><span class="s">"#F7F7F2"</span> <span class="na">style=</span><span class="s">"border-bottom:1px solid #cccccc;"</span><span class="nt">&gt;&lt;strong&gt;</span>Prod. no.<span class="nt">&lt;/strong&gt;&lt;/td&gt;</span>
+            <span class="nt">&lt;td</span> <span class="na">bgcolor=</span><span class="s">"#F7F7F2"</span> <span class="na">style=</span><span class="s">"border-bottom:1px solid #cccccc;"</span><span class="nt">&gt;&lt;strong&gt;</span>Name<span class="nt">&lt;/strong&gt;&lt;/td&gt;</span>
+            <span class="nt">&lt;td</span> <span class="na">bgcolor=</span><span class="s">"#F7F7F2"</span> <span class="na">style=</span><span class="s">"border-bottom:1px solid #cccccc;"</span><span class="nt">&gt;&lt;strong&gt;</span>Stock<span class="nt">&lt;/strong&gt;&lt;/td&gt;</span>
+        <span class="nt">&lt;/tr&gt;</span>
+
+        <span class="cp">{%</span> <span class="k">for</span> <span class="nv">lineItem</span> <span class="ow">in</span> <span class="nv">order.lineItems</span> <span class="cp">%}</span>
+        <span class="cp">{%</span> <span class="k">if</span> <span class="nv">lineItem.payload.stock</span> <span class="o">==</span> <span class="nv">0</span> <span class="err">|</span><span class="o">| </span><span class="nf">lineItem</span><span class="err">.</span><span class="nv">payload.stock</span> <span class="o">&lt;</span> <span class="nv">5</span><span class="cp">%}</span>
+            <span class="nt">&lt;tr&gt;</span>
+                <span class="nt">&lt;td&gt;</span><span class="cp">{%</span> <span class="k">if</span> <span class="nv">lineItem.payload.productNumber</span> <span class="ow">is</span> <span class="nb">defined</span> <span class="cp">%}{{</span> <span class="nv">lineItem.payload.productNumber</span><span class="o">|</span><span class="nf">u</span><span class="err">.</span><span class="nv">wordwrap</span><span class="p">(</span><span class="nv">80</span><span class="p">)</span> <span class="cp">}}{%</span> <span class="k">endif</span> <span class="cp">%}</span><span class="nt">&lt;/td&gt;</span>
+                <span class="nt">&lt;td&gt;</span><span class="cp">{{</span> <span class="nv">lineItem.label</span> <span class="cp">}}</span><span class="nt">&lt;/td&gt;</span>
+                <span class="nt">&lt;td&gt;</span>
+                    <span class="cp">{{</span> <span class="nv">lineItem.payload.stock</span> <span class="cp">}}</span>
+                <span class="nt">&lt;/td&gt;</span>
+            <span class="nt">&lt;/tr&gt;</span>
+            <span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span>
+        <span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
+    <span class="nt">&lt;/table&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</code></pre></div></div>
+
+<p>Passe in beiden Templates die Zeilen mit dem <code class="language-plaintext highlighter-rouge">lineItem.payload.stock == 0 || lineItem.payload.stock &lt; 5</code> an, sodass sie mit deiner bei 2. erstellten Regel übereinstimmen.<br />
+Die Zeilen sorgen dafür, dass nicht alle Produkte aus einer Bestellung in der Mail landen, sondern nur die, bei denen der Lagerbestand unterschritten wurde.</p>
+
+<h2 id="4-flow-builder-erweitern">4. Flow-Builder erweitern</h2>
+<p>Wir haben nun das System aktiviert, eine Regel erstellt, die greift, wenn Produkte einen Lagerbestand unterschreiten und ein Mail-Template erstellt, welches wir nutzen möchten.<br />
+   Im letzten Schritt müssen wir Shopware nur noch mitteilen, dass die Mail rausgesendet werden soll, wenn die bei 2. definierte Regel eintritt.</p>
+
+<p>Wie oben schon erwähnt, wird beim Eingang einer Bestellung der Lagerbestand abgezogen. Demnach macht es auch hier Sinn, genau an dieser Stelle die Regel zu evaluieren.<br />
+   Hierzu öffnen wir den Flow-Builder unter <code class="language-plaintext highlighter-rouge">Einstellungen &gt; Shop &gt; Flow-Builder</code> und öffnen den <code class="language-plaintext highlighter-rouge">Order placed</code> Flow.</p>
+
+<p><img src="/assets/images/bestand_flow2.png" alt="" /></p>
+
+<p>Wenn wir nun den Tab <strong>Flow</strong> öffnen, sehen wir schon den Flow, der die Bestellbestätigung raussendet.<br />
+   Klicke in der Timeline auf das <strong>+</strong> und wähle <strong>Bedingung (WENN) hinzufügen</strong> aus.<br />
+   Wähle als Regel die bei 2. erstellte Regel aus.<br />
+   Es erscheinen 2 neue Zweige <strong>Wahr</strong> und <strong>Falsch</strong>.<br />
+   Während <strong>Wahr</strong> ausgeführt wird, wenn die Regel zutrifft, wird <strong>Falsch</strong> ausgeführt, wenn die Regel NICHT zutrifft.<br />
+   Wenn die Regel nicht zutrifft, möchten wir auch nichts machen. Demnach können wir hier die Aktion <strong>Flow anhalten</strong> auswählen.<br />
+   Wenn die Regel zutrifft, möchten wir die Mail raussendet. Demnach können wir hier die Aktion <strong>E-Mail verschicken</strong> auswählen.<br />
+   Wähle als Empfänger <strong>Administrator</strong> oder definiere alternativ eine andere E-Mail Adresse mittels <strong>Anderer Empfänger</strong>.<br />
+   Wähle jetzt noch das E-Mail Template aus, welches wir bei 3. angelegt haben aus und speichere den Flow.<br />
+<img src="/assets/images/bestand_flow.png" alt="" /></p>
+
+<h2 id="5-tests-durchführen">5. Tests durchführen</h2>
+<p>Leere sicherheitshalber einmal den Cache und Teste es aus!<br />
+   Wenn du nun ein oder mehrere Produkte bestellst, wird die E-Mail rausgesendet sofern das Produkt den in der Regel definierten Lagerbestand unterschreitet.</p>
+
+<hr />
+
+<p>Mehr über das neue Bestands System erfährst du auf der <a href="https://developer.shopware.com/docs/guides/hosting/configurations/shopware/stock.html">Offiziellen Shopware Seite</a>.</p>
+
+  </div>
+
+  
+</article>
+
+<aside class="pagination post-pagination">
+  
+    <a class="prev post-prev" href="/entwickler/2023/11/26/als-kunde-im-storefront-anmelden.html">
+      <i class="fas fa-chevron-left"></i> <span class="">Als Kunde im Storefront anmelden
+</span>
+    </a>
+  
+  
+  
+    <span class="next post-next unable"><i class="fas fa-chevron-right"></i></span>
+  
+</aside>
+
+
+
+        </div>
+      </main>
+
+      <footer class="footer outer">
+  <div class="inner">
+    <div class="columns">
+      <p class="column">
+        &copy; <time datetime="2023-11-28T23:22:02+01:00">2023</time>. All rights reserved.
+      </p>
+  
+      <p class="column">
+        Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> & <a href="https://github.com/vfvong/jekyll-theme-quartz" target="_blank">Quartz</a>
+      </p>
+  
+      
+      <p class="column">
+        Nützliches Wissen, Helfer und Quick-Tipps rund um Shopware6
+      </p>
+      
+
+      
+      <div class="column social">
+        
+          <a href="mailto:hello@jeffblock.de" target="_blank">
+            <i class="fas fa-envelope" title="Email"></i>
+          </a>
+        
+          <a href="https://twitter.com/block_jeff" target="_blank">
+            <i class="fab fa-twitter" title="Twitter"></i>
+          </a>
+        
+          <a href="https://github.com/gainto" target="_blank">
+            <i class="fab fa-github" title="GitHub"></i>
+          </a>
+        
+      </div>
+      
+    </div>      
+  </div>
+</footer>
+
+    </div>
+
+    
+
+    
+  </body>
+</html>
