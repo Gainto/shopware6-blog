@@ -1,0 +1,647 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="de"><generator uri="https://jekyllrb.com/" version="4.3.2">Jekyll</generator><link href="https://blog.jeffblock.de/feed.xml" rel="self" type="application/atom+xml" /><link href="https://blog.jeffblock.de/" rel="alternate" type="text/html" hreflang="de" /><updated>2023-11-28T22:38:45+01:00</updated><id>https://blog.jeffblock.de/feed.xml</id><title type="html">Shopware6 knowledge base</title><subtitle>Nützliches Wissen, Helfer und Quick-Tipps rund um Shopware6</subtitle><entry><title type="html">E-Mail Benachrichtigung bei Bestandsunterschreitung (OHNE PLUGIN)</title><link href="https://blog.jeffblock.de/entwickler/shopbetreiber/2023/11/28/email-benachrichtigung-bei-bestandsunterschreitung.html" rel="alternate" type="text/html" title="E-Mail Benachrichtigung bei Bestandsunterschreitung (OHNE PLUGIN)" /><published>2023-11-28T22:00:00+01:00</published><updated>2023-11-28T22:00:00+01:00</updated><id>https://blog.jeffblock.de/entwickler/shopbetreiber/2023/11/28/email-benachrichtigung-bei-bestandsunterschreitung</id><content type="html" xml:base="https://blog.jeffblock.de/entwickler/shopbetreiber/2023/11/28/email-benachrichtigung-bei-bestandsunterschreitung.html"><![CDATA[<p><strong>Ab der Version 6.5.5.0</strong> gibt es ein neues, optionales Bestands Handling, welches es ermöglicht per E-Mail benachrichtigt zu werden, wenn der Bestand eines Produkts einen vordefinierten Schwellenwert unterschreitet.</p>
+
+<p>Das Besondere dabei: Diese Funktion lässt sich ohne den Einsatz kostenpflichtiger Drittanbieter-Plug-Ins realisieren.</p>
+
+<p><strong>Hintergrund: Warum ab Shopware 6.5.5.0?</strong></p>
+
+<p>Die bisherige Praxis, Bestandsbenachrichtigungen über kostenpflichtige Plug-Ins abzuwickeln, wird nun durch einen raffinierte “Trick” mit den nativen Bordmitteln von Shopware ersetzt.</p>
+
+<p>Die Vorgehensweise von Shopware im Umgang mit dem Lagerbestand mag auf den ersten Blick kompliziert erscheinen.<br />
+Jedes Produkt verfügt über zwei Felder, den <strong>Lagerbestand</strong> und den <strong>Verfügbaren Lagerbestand</strong>.<br />
+Bei einer Bestellung wird nicht, wie angenommen, der Lagerbestand, sondern der verfügbare Lagerbestand reduziert.<br />
+Dies ermöglicht es, das Produkt weiterhin als “reserviert” zu betrachten, während der eigentliche Lagerbestand erst nach Abschluss der Bestellung sinkt.</p>
+
+<p>Diese Herangehensweise ist zwar sinnvoll, aber für viele Shopbetreiber verwirrend.<br />
+Hinzu kommt, dass nicht überall auf die Variable zugegriffen werden konnte, die den “tatsächlichen” Bestand anzeigt.<br />
+Wenn die hier erklärte Vorgehensweise in einer älteren Shopware Version genutzt wird, kann nur der reservierte- aber nicht der reale Lagerbestand kontrolliert werden.<br />
+Nach Rückmeldungen aus der Community hat Shopware das System überarbeitet: In der überarbeiteten Version repräsentiert der Lagerbestand den Echtzeit-Lagerbestand.</p>
+
+<p><strong>Was bedeutet das für Shopbetreiber?</strong></p>
+
+<p>Mit dem neuen Bestands-Handling, optional verfügbar ab Version 6.5.5.0 und ab Version 6.6.0.0 zum Standard, können Shopbetreiber nun direkt auf den Echtzeit-Bestand zugreifen. Dies eröffnet die Möglichkeit, den Shopbetreiber automatisch zu benachrichtigen, wenn der Bestand eines Produkts einen vordefinierten Wert erreicht oder unterschreitet.</p>
+
+<hr />
+
+<p><strong>In folgendem erkläre ich in 5 Schritten die Konfiguration der Bestandsbenachrichtigungs-E-Mail + Aktivierung des neuen Bestand Systems:</strong></p>
+
+<h2 id="1-neues-bestands-handling-system-aktvieren">1. Neues Bestands-Handling-System aktvieren</h2>
+<p>Um das neue System zu finden, verbinden wir uns mit SSH oder FTP auf den Server, auf dem der Shop liegt und öffnen die <code class="language-plaintext highlighter-rouge">&lt;ShopInstallation&gt;/.env</code> Datei.<br />
+   hier fügen wir folgende Zeile ans Ende hinzu, bevor wir die Datei abspeichern und wieder schließen: <code class="language-plaintext highlighter-rouge">STOCK_HANDLING=1</code><br />
+   Wunderbar, das neue Stock Handling System ist jetzt aktiv.</p>
+<h2 id="2-neue-regel-anlegen">2. Neue Regel anlegen</h2>
+<p>Als nächstes benötigen wir eine Regel, die greift, wenn ein Produkt einen gewissen Lagerbestand erreicht oder unterschreitet.<br />
+   Im Admin navigieren wir zu <code class="language-plaintext highlighter-rouge">Einstellungen &gt; Shop &gt; Rule Builder &gt; Neue Regel</code>.<br />
+   Gib der Regel einen passenden Namen, wie “Lagerbestand kleiner 5” und setze die Priorität auf 100.<br />
+   Bei den Bedingungen wählen wir nun aus:<br />
+   <code class="language-plaintext highlighter-rouge">Position mit Lagerbestand | Mind. eine | Ist kleiner/gleich | 5</code><br />
+   Die 5 ersetzt du natürlich mit dem Wert, bei dem du benachrichtigt werden möchtest.<br />
+   Nun können wir die Regel speichern und mit dem nächsten Schritt weiter machen.<br />
+	 <img src="/assets/images/bestand_rule.png" alt="" /></p>
+
+<h2 id="3-mail-template-kopieren--anpassen">3. Mail-Template kopieren &amp; anpassen</h2>
+<p>Immer dann, wenn eine Bestellung aufgegbeben wird, wird der Lagerbestand der jeweiligen Produkte abgezogen.<br />
+   Wenn eine Bestellung aufgebeben wird, wird ebenso eine Bestellbestätigung rausgesendet.<br />
+   Da wir im nächsten Schritt genau an dieser Stelle eingreifen, macht es Sinn, das Bestellbestätigungs Mail-Template als Basis zu nutzen.<br />
+   Navigiere zu <code class="language-plaintext highlighter-rouge">Einstellungen &gt; Shop &gt; E-Mail Templates</code> und kopiere das <code class="language-plaintext highlighter-rouge">Order confirmation</code> Template.<br />
+   Öffne das duplizierte Template und schreib in die Beschreibung “Bestandsbenachrichtigung”, sodass du es später von der Bestellbestätigung Unterscheiden kannst.<br />
+   Wähle einen passenden Betreff (z.B. Bestandsbenachrichtigung) und scrolle weiter runter zu den Mail Texten.</p>
+
+<p><img src="/assets/images/bestand_mail1.png" alt="" /></p>
+
+<p>Mittels <code class="language-plaintext highlighter-rouge">{{ lineItem.payload.stock }}</code> können wir auf den Lagerbestand der jeweiligen Produkte zurückgreifen.<br />
+Ein minimalistisches Mail Template könnte folgendermaßen aussehen:<br />
+<img src="/assets/images/bestand_mail2.png" alt="" /></p>
+
+<p>Text:</p>
+
+<div class="language-twig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">{%</span> <span class="k">for</span> <span class="nv">lineItem</span> <span class="ow">in</span> <span class="nv">order.lineItems</span> <span class="cp">%}</span>
+<span class="cp">{%</span> <span class="k">if</span> <span class="nv">lineItem.payload.stock</span> <span class="o">==</span> <span class="nv">0</span> <span class="err">|</span><span class="o">| </span><span class="nf">lineItem</span><span class="err">.</span><span class="nv">payload.stock</span> <span class="o">&lt;</span> <span class="nv">5</span><span class="cp">%}{{</span> <span class="nv">lineItem.label</span>  <span class="cp">}}</span> <span class="cp">{%</span> <span class="k">if</span> <span class="nv">lineItem.payload.productNumber</span> <span class="ow">is</span> <span class="nb">defined</span> <span class="cp">%}</span>(<span class="cp">{{</span> <span class="nv">lineItem.payload.productNumber</span><span class="o">|</span><span class="nf">u</span><span class="err">.</span><span class="nv">wordwrap</span><span class="p">(</span><span class="nv">80</span><span class="p">)</span> <span class="cp">}}</span>)<span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span>: <span class="cp">{{</span> <span class="nv">lineItem.payload.stock</span>  <span class="cp">}}</span> )<span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span>
+<span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
+</code></pre></div></div>
+
+<p>HTML:</p>
+
+<div class="language-twig highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;div</span> <span class="na">style=</span><span class="s">"font-family:arial; font-size:12px;"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;table</span> <span class="na">border=</span><span class="s">"0"</span> <span class="na">style=</span><span class="s">"font-family:Arial, Helvetica, sans-serif; font-size:12px;"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;tr&gt;</span>
+            <span class="nt">&lt;td</span> <span class="na">bgcolor=</span><span class="s">"#F7F7F2"</span> <span class="na">style=</span><span class="s">"border-bottom:1px solid #cccccc;"</span><span class="nt">&gt;&lt;strong&gt;</span>Prod. no.<span class="nt">&lt;/strong&gt;&lt;/td&gt;</span>
+            <span class="nt">&lt;td</span> <span class="na">bgcolor=</span><span class="s">"#F7F7F2"</span> <span class="na">style=</span><span class="s">"border-bottom:1px solid #cccccc;"</span><span class="nt">&gt;&lt;strong&gt;</span>Name<span class="nt">&lt;/strong&gt;&lt;/td&gt;</span>
+            <span class="nt">&lt;td</span> <span class="na">bgcolor=</span><span class="s">"#F7F7F2"</span> <span class="na">style=</span><span class="s">"border-bottom:1px solid #cccccc;"</span><span class="nt">&gt;&lt;strong&gt;</span>Stock<span class="nt">&lt;/strong&gt;&lt;/td&gt;</span>
+        <span class="nt">&lt;/tr&gt;</span>
+
+        <span class="cp">{%</span> <span class="k">for</span> <span class="nv">lineItem</span> <span class="ow">in</span> <span class="nv">order.lineItems</span> <span class="cp">%}</span>
+        <span class="cp">{%</span> <span class="k">if</span> <span class="nv">lineItem.payload.stock</span> <span class="o">==</span> <span class="nv">0</span> <span class="err">|</span><span class="o">| </span><span class="nf">lineItem</span><span class="err">.</span><span class="nv">payload.stock</span> <span class="o">&lt;</span> <span class="nv">5</span><span class="cp">%}</span>
+            <span class="nt">&lt;tr&gt;</span>
+                <span class="nt">&lt;td&gt;</span><span class="cp">{%</span> <span class="k">if</span> <span class="nv">lineItem.payload.productNumber</span> <span class="ow">is</span> <span class="nb">defined</span> <span class="cp">%}{{</span> <span class="nv">lineItem.payload.productNumber</span><span class="o">|</span><span class="nf">u</span><span class="err">.</span><span class="nv">wordwrap</span><span class="p">(</span><span class="nv">80</span><span class="p">)</span> <span class="cp">}}{%</span> <span class="k">endif</span> <span class="cp">%}</span><span class="nt">&lt;/td&gt;</span>
+                <span class="nt">&lt;td&gt;</span><span class="cp">{{</span> <span class="nv">lineItem.label</span> <span class="cp">}}</span><span class="nt">&lt;/td&gt;</span>
+                <span class="nt">&lt;td&gt;</span>
+                    <span class="cp">{{</span> <span class="nv">lineItem.payload.stock</span> <span class="cp">}}</span>
+                <span class="nt">&lt;/td&gt;</span>
+            <span class="nt">&lt;/tr&gt;</span>
+            <span class="cp">{%</span> <span class="k">endif</span> <span class="cp">%}</span>
+        <span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
+    <span class="nt">&lt;/table&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</code></pre></div></div>
+
+<p>Passe in beiden Templates die Zeilen mit dem <code class="language-plaintext highlighter-rouge">lineItem.payload.stock == 0 || lineItem.payload.stock &lt; 5</code> an, sodass sie mit deiner bei 2. erstellten Regel übereinstimmen.<br />
+Die Zeilen sorgen dafür, dass nicht alle Produkte aus einer Bestellung in der Mail landen, sondern nur die, bei denen der Lagerbestand unterschritten wurde.</p>
+
+<h2 id="4-flow-builder-erweitern">4. Flow-Builder erweitern</h2>
+<p>Wir haben nun das System aktiviert, eine Regel erstellt, die greift, wenn Produkte einen Lagerbestand unterschreiten und ein Mail-Template erstellt, welches wir nutzen möchten.<br />
+   Im letzten Schritt müssen wir Shopware nur noch mitteilen, dass die Mail rausgesendet werden soll, wenn die bei 2. definierte Regel eintritt.</p>
+
+<p>Wie oben schon erwähnt, wird beim Eingang einer Bestellung der Lagerbestand abgezogen. Demnach macht es auch hier Sinn, genau an dieser Stelle die Regel zu evaluieren.<br />
+   Hierzu öffnen wir den Flow-Builder unter <code class="language-plaintext highlighter-rouge">Einstellungen &gt; Shop &gt; Flow-Builder</code> und öffnen den <code class="language-plaintext highlighter-rouge">Order placed</code> Flow.</p>
+
+<p><img src="/assets/images/bestand_flow2.png" alt="" /></p>
+
+<p>Wenn wir nun den Tab <strong>Flow</strong> öffnen, sehen wir schon den Flow, der die Bestellbestätigung raussendet.<br />
+   Klicke in der Timeline auf das <strong>+</strong> und wähle <strong>Bedingung (WENN) hinzufügen</strong> aus.<br />
+   Wähle als Regel die bei 2. erstellte Regel aus.<br />
+   Es erscheinen 2 neue Zweige <strong>Wahr</strong> und <strong>Falsch</strong>.<br />
+   Während <strong>Wahr</strong> ausgeführt wird, wenn die Regel zutrifft, wird <strong>Falsch</strong> ausgeführt, wenn die Regel NICHT zutrifft.<br />
+   Wenn die Regel nicht zutrifft, möchten wir auch nichts machen. Demnach können wir hier die Aktion <strong>Flow anhalten</strong> auswählen.<br />
+   Wenn die Regel zutrifft, möchten wir die Mail raussendet. Demnach können wir hier die Aktion <strong>E-Mail verschicken</strong> auswählen.<br />
+   Wähle als Empfänger <strong>Administrator</strong> oder definiere alternativ eine andere E-Mail Adresse mittels <strong>Anderer Empfänger</strong>.<br />
+   Wähle jetzt noch das E-Mail Template aus, welches wir bei 3. angelegt haben aus und speichere den Flow.<br />
+<img src="/assets/images/bestand_flow.png" alt="" /></p>
+
+<h2 id="5-tests-durchführen">5. Tests durchführen</h2>
+<p>Leere sicherheitshalber einmal den Cache und Teste es aus!<br />
+   Wenn du nun ein oder mehrere Produkte bestellst, wird die E-Mail rausgesendet sofern das Produkt den in der Regel definierten Lagerbestand unterschreitet.</p>
+
+<hr />
+
+<p>Mehr über das neue Bestands System erfährst du auf der <a href="https://developer.shopware.com/docs/guides/hosting/configurations/shopware/stock.html">Offiziellen Shopware Seite</a></p>]]></content><author><name></name></author><category term="entwickler" /><category term="shopbetreiber" /><summary type="html"><![CDATA[Ab der Version 6.5.5.0 gibt es ein neues, optionales Bestands Handling, welches es ermöglicht per E-Mail benachrichtigt zu werden, wenn der Bestand eines Produkts einen vordefinierten Schwellenwert unterschreitet. Das Besondere dabei: Diese Funktion lässt sich ohne den Einsatz kostenpflichtiger Drittanbieter-Plug-Ins realisieren.]]></summary></entry><entry><title type="html">Als Kunde im Storefront anmelden</title><link href="https://blog.jeffblock.de/entwickler/2023/11/26/als-kunde-im-storefront-anmelden.html" rel="alternate" type="text/html" title="Als Kunde im Storefront anmelden" /><published>2023-11-26T23:30:11+01:00</published><updated>2023-11-26T23:30:11+01:00</updated><id>https://blog.jeffblock.de/entwickler/2023/11/26/als-kunde-im-storefront-anmelden</id><content type="html" xml:base="https://blog.jeffblock.de/entwickler/2023/11/26/als-kunde-im-storefront-anmelden.html"><![CDATA[<p>Shopbetreiber sehen sich häufig mit der Notwendigkeit konfrontiert, sich im Storefront als Kunde anzumelden. Dies kann beispielsweise erforderlich sein, um eine Telefonbestellung entgegenzunehmen oder ein Angebot abzuschließen. Während Shopware 5 diese Funktion standardmäßig bereitstellte, fehlt sie in Shopware 6 gänzlich.</p>
+
+<p>Es gibt mehrere kostenpflichtige Plug-Ins im Store, die diese Funktionalität wiederherstellen können. Alternativ steht auch eine kostenfreie Version zur Verfügung, die von Shopbetreibern genutzt werden kann.</p>
+
+<p>Das entsprechende Plug-In ist auf GitHub verfügbar und kann unter folgendem Link gefunden werden:
+<a href="https://github.com/Gainto/JblLoginAsCustomer">Gainto/JblLoginAsCustomer</a></p>
+
+<p>Die Verwendung dieses Plug-Ins ermöglicht es Shopbetreibern, sich nahtlos im Storefront als Kunden anzumelden.
+Die Anmeldung findet entweder über das Kunden-Listing oder die Kunden-Detailseite statt.</p>]]></content><author><name></name></author><category term="entwickler" /><summary type="html"><![CDATA[Shopbetreiber sehen sich häufig mit der Notwendigkeit konfrontiert, sich im Storefront als Kunde anzumelden. Dies kann beispielsweise erforderlich sein, um eine Telefonbestellung entgegenzunehmen oder ein Angebot abzuschließen. Während Shopware 5 diese Funktion standardmäßig bereitstellte, fehlt sie in Shopware 6 gänzlich.]]></summary></entry><entry><title type="html">Shopware6 und die UUIDs</title><link href="https://blog.jeffblock.de/entwickler/2023/11/19/shopware6-und-die-uuids.html" rel="alternate" type="text/html" title="Shopware6 und die UUIDs" /><published>2023-11-19T20:37:56+01:00</published><updated>2023-11-19T20:37:56+01:00</updated><id>https://blog.jeffblock.de/entwickler/2023/11/19/shopware6-und-die-uuids</id><content type="html" xml:base="https://blog.jeffblock.de/entwickler/2023/11/19/shopware6-und-die-uuids.html"><![CDATA[<p>Shopware 6 setzt auf die Verwendung von UUIDs <a href="https://de.wikipedia.org/wiki/Universally_Unique_Identifier">Universally Unique Identifiers</a> anstelle der klassischen sequentiellen IDs.
+Obwohl UUIDs zahlreiche Vorteile bieten (im Vergleich zu sequentiellen IDs), können sie das Leben eines Entwicklers gelegentlich komplizierter gestalten. Insbesondere wenn man schnell auf Datenbankdaten zugreifen möchte, können UUIDs eine zusätzliche Herausforderung darstellen.</p>
+
+<p>Um die Entwicklergemeinschaft bestmöglich zu unterstützen, werden im Folgenden Lösungsansätze vorgestellt, wie Datensätze in Shopware 6 anhand von UUIDs aktualisiert, erstellt oder transformiert werden können.</p>
+
+<p>Allgemein werden UUIDs in der Datenbank als BINARY-Daten gespeichert und in der Regel in hexadezimaler Form dargestellt. Wenn eine ID in der Datenbank gespeichert werden soll, erfolgt dies als BINARY, und beim Auslesen werden die BINARY-Daten extrahiert und in Hex umgewandelt.</p>
+
+<p><strong>Beispiele:</strong></p>
+
+<p><strong>Cast as BINARY:</strong></p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">UPDATE</span> <span class="nv">`order`</span> <span class="k">SET</span> <span class="nv">`state_id`</span> <span class="o">=</span> <span class="mi">0</span><span class="n">xca58b0b780014a35b26291dfd7fbe6b3</span> <span class="k">WHERE</span> <span class="nv">`order`</span><span class="p">.</span><span class="nv">`id`</span> <span class="o">=</span> <span class="k">CAST</span><span class="p">(</span><span class="mi">0</span><span class="n">xfd9884b375d145389e4dd780b7e49f52</span> <span class="k">AS</span> <span class="nb">BINARY</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><strong>Unhex:</strong></p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">INSERT</span> <span class="k">INTO</span> <span class="nv">`customer_tag`</span> <span class="p">(</span><span class="nv">`customer_id`</span><span class="p">,</span> <span class="nv">`tag_id`</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="n">UNHEX</span><span class="p">(</span><span class="s1">'CFBD5018D38D41D8ADCA10D94FC8BDD6'</span><span class="p">),</span><span class="n">UNHEX</span><span class="p">(</span><span class="s1">'CFBD5018D38D41D8ADCA10D94FC8BDD2'</span><span class="p">));</span>
+</code></pre></div></div>
+
+<p><strong>Hex:</strong></p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">SELECT</span> <span class="k">LOWER</span><span class="p">(</span><span class="n">HEX</span><span class="p">(</span><span class="n">cms_page_id</span><span class="p">))</span> <span class="k">as</span> <span class="n">cms_page_id</span> <span class="k">FROM</span> <span class="n">cms_page_translation</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p><strong>UUID als BLOB in Hexadezimaler Form darstellen (UUID zu BINARY):</strong></p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">SELECT</span> <span class="n">id</span> <span class="k">FROM</span> <span class="n">customer</span> <span class="k">WHERE</span> <span class="n">id</span> <span class="o">=</span> <span class="n">X</span><span class="s1">'6F9619FF8B86D011B42D00C04FC964FF'</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>Zur Erzeugung zufällig generierter, 32 Zeichen langer Hex-IDs kann der folgende Generator verwendet werden: <a href="https://www.browserling.com/tools/random-hex">Random Hex Generator</a></p>
+
+<p>Wenn sich der Code im Shopware-Kontext befindet, bietet Shopware eine Klasse an, die die Arbeit erleichtert und das manuelle Konvertieren von A nach B überflüssig macht.
+Hierbei kann die Klasse <code class="language-plaintext highlighter-rouge">Shopware\Core\Framework\Uuid\Uuid</code> genutzt werden, mit Methoden wie:</p>
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Uuid</span><span class="o">::</span><span class="nf">randomBytes</span><span class="p">()</span>
+<span class="nc">Uuid</span><span class="o">::</span><span class="nf">fromBytesToHex</span><span class="p">()</span>
+<span class="nc">Uuid</span><span class="o">::</span><span class="nf">fromHexToBytes</span><span class="p">()</span>
+<span class="nc">Uuid</span><span class="o">::</span><span class="nf">isValid</span><span class="p">()</span>
+</code></pre></div></div>]]></content><author><name></name></author><category term="entwickler" /><summary type="html"><![CDATA[Shopware 6 setzt auf die Verwendung von UUIDs Universally Unique Identifiers anstelle der klassischen sequentiellen IDs. Obwohl UUIDs zahlreiche Vorteile bieten (im Vergleich zu sequentiellen IDs), können sie das Leben eines Entwicklers gelegentlich komplizierter gestalten. Insbesondere wenn man schnell auf Datenbankdaten zugreifen möchte, können UUIDs eine zusätzliche Herausforderung darstellen.]]></summary></entry><entry><title type="html">Schnelles wechseln zwischen DEV und PROD</title><link href="https://blog.jeffblock.de/entwickler/2023/11/12/schnelles-wechseln-dev-prod.html" rel="alternate" type="text/html" title="Schnelles wechseln zwischen DEV und PROD" /><published>2023-11-12T20:37:56+01:00</published><updated>2023-11-12T20:37:56+01:00</updated><id>https://blog.jeffblock.de/entwickler/2023/11/12/schnelles-wechseln-dev-prod</id><content type="html" xml:base="https://blog.jeffblock.de/entwickler/2023/11/12/schnelles-wechseln-dev-prod.html"><![CDATA[<p>Es gibt verschiedene Gründe dafür, den Betriebsmodus des Shops in der <code class="language-plaintext highlighter-rouge">.env</code>-Datei von <code class="language-plaintext highlighter-rouge">prod</code> auf <code class="language-plaintext highlighter-rouge">dev</code> umzustellen. Insbesondere Entwickler sind mit dieser Notwendigkeit vertraut.</p>
+
+<p>Es kann jedoch mühsam sein, sich zunächst über SSH oder FTP beim entsprechenden Shop anzumelden, um dann die <code class="language-plaintext highlighter-rouge">.env</code>-Datei zu öffnen, zu bearbeiten und zu speichern.</p>
+
+<p>Um diesen Prozess zu erleichtern, steht ein kleines, kostenfreies Hilfs-Plug-In für Shopware 6.5 zur Verfügung.
+Dieses Plug-In integriert zwei switches im Administrationsbereich, mit denen der Wechsel zwischen den Modi “PROD” und “DEV” schnell und unkompliziert erfolgen kann.</p>
+
+<p>Das Plug-In richtet sich an Entwickler und Testinstanzen und sollte nicht in einem produktiven Shop verwendet werden</p>
+
+<p><strong>Hier gehts zum Plug-In:</strong><br />
+<a href="https://github.com/Gainto/JblEnvSwitcher">Gainto/JblEnvSwitcher</a></p>]]></content><author><name></name></author><category term="entwickler" /><summary type="html"><![CDATA[Es gibt verschiedene Gründe dafür, den Betriebsmodus des Shops in der .env-Datei von prod auf dev umzustellen. Insbesondere Entwickler sind mit dieser Notwendigkeit vertraut.]]></summary></entry><entry><title type="html">Shopware6 SEO URL’s richtig konfigurieren</title><link href="https://blog.jeffblock.de/shopbetreiber/2023/11/05/seo-urls-richtig-konfigurieren.html" rel="alternate" type="text/html" title="Shopware6 SEO URL’s richtig konfigurieren" /><published>2023-11-05T20:37:56+01:00</published><updated>2023-11-05T20:37:56+01:00</updated><id>https://blog.jeffblock.de/shopbetreiber/2023/11/05/seo-urls-richtig-konfigurieren</id><content type="html" xml:base="https://blog.jeffblock.de/shopbetreiber/2023/11/05/seo-urls-richtig-konfigurieren.html"><![CDATA[<p>Verständliche SEO-URLs sind essenziell für eine erfolgreiche Suchmaschinenoptimierung.
+In Shopware 6 steht dir standardmäßig eine vorgefertigte Lösung zur Verfügung, um benutzerfreundliche URLs zu erstellen.
+Du kannst genau festlegen, wie die URLs für Produkte oder Kategorien strukturiert werden sollen. Die Anpassung der SEO-URL-Struktur erfolgt unter <code class="language-plaintext highlighter-rouge">Einstellungen &gt; Shop &gt; SEO</code>.
+Hier sind die gängigsten Snippets aufgeführt, die du für die Gestaltung der SEO-URLs nutzen kannst:</p>
+
+<p><strong>Standard:</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">{{ product.translated.name }}/{{ product.productNumber }}</code></p>
+
+<p><strong>Alles klein geschrieben:</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">{{ product.translated.name|lower }}/{{ product.productNumber|lower }}</code></p>
+
+<p><strong>Keine Produktnummer bei Nicht-Varianten:</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">{{ product.translated.name }}{%if product.parentId %}/{{ product.productNumber }}{% endif %}</code></p>
+
+<p><strong>Keine Produktnummer bei Nicht-Varianten und alles klein geschrieben:</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">{{ product.translated.name|lower }}{%if product.parentId %}/{{ product.productNumber|lower }}{% endif %}</code></p>
+
+<p><strong>Wie in SW5:</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">{{ product.translated.name|lower }}{%if product.parentId %}/?number={{ product.productNumber }}{% endif %}</code></p>
+
+<p><strong>Wichtig</strong><br />
+Nach dem Ändern der SEO URL’s einmal den Index aktualisieren:<br />
+<code class="language-plaintext highlighter-rouge">bin/console dal:refresh:index</code></p>
+
+<hr />
+
+<p>Individuelle SEO-URLs können auf der Ebene von Produkten oder Kategorien separat überschrieben werden.
+Sobald eine solche manuelle Überschreibung erfolgt ist, unterliegen sie keiner automatischen Anpassung mehr im Zuge von Strukturänderungen.
+Nach einer manuellen Aktualisierung wird ein Flag in der Datenbank gesetzt.
+Dieses Flag verhindert, dass die manuell festgelegte URL bei späteren Strukturanpassungen überschrieben wird.
+Um die manuelle Überschreibung rückgängig zu machen, kann das Flag <code class="language-plaintext highlighter-rouge">is_modified</code> in der Tabelle <code class="language-plaintext highlighter-rouge">seo_url</code> auf <code class="language-plaintext highlighter-rouge">0</code> zurückgesetzt werden.</p>]]></content><author><name></name></author><category term="shopbetreiber" /><summary type="html"><![CDATA[Verständliche SEO-URLs sind essenziell für eine erfolgreiche Suchmaschinenoptimierung. In Shopware 6 steht dir standardmäßig eine vorgefertigte Lösung zur Verfügung, um benutzerfreundliche URLs zu erstellen. Du kannst genau festlegen, wie die URLs für Produkte oder Kategorien strukturiert werden sollen. Die Anpassung der SEO-URL-Struktur erfolgt unter Einstellungen &gt; Shop &gt; SEO. Hier sind die gängigsten Snippets aufgeführt, die du für die Gestaltung der SEO-URLs nutzen kannst:]]></summary></entry><entry><title type="html">Shopware6 Plug-Ins schneller builden</title><link href="https://blog.jeffblock.de/entwickler/2023/10/29/plugins-schneller-builden.html" rel="alternate" type="text/html" title="Shopware6 Plug-Ins schneller builden" /><published>2023-10-29T20:37:56+01:00</published><updated>2023-10-29T20:37:56+01:00</updated><id>https://blog.jeffblock.de/entwickler/2023/10/29/plugins-schneller-builden</id><content type="html" xml:base="https://blog.jeffblock.de/entwickler/2023/10/29/plugins-schneller-builden.html"><![CDATA[<p>Wenn ein Plug-In oder eine Erweiterung installiert wird, kopiert Shopware den Inhalt des <code class="language-plaintext highlighter-rouge">&lt;plugin&gt;/src/Resources/public</code> Ordners in das entsprechende Bundle <code class="language-plaintext highlighter-rouge">/public/bundles/plugin-name</code>.
+Dieser Ordner enthält alle erforderlichen Assets (CSS, JS usw.) in komprimierter und minifizierter Form.</p>
+
+<p>Der Erstellungsprozess dieser Dateien erfordert die Ausführung des Build-Vorgangs, der erfahrungsgemäß recht zeitaufwendig sein kann.
+Insbesondere bei wiederholtem Anstoßen des Prozesses (aus welchen Gründen auch immer), kann das echt stören und einen Entwickler aus den “Flow” bringen.</p>
+
+<p>Um den Build-Prozess etwas zu beschleunigen, können die folgenden Exports verwendet werden. Alternativ können die Werte auch in die .env-Datei aufgenommen werden:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>export SHOPWARE_ADMIN_BUILD_ONLY_EXTENSIONS=1
+export DISABLE_ADMIN_COMPILATION_TYPECHECK=1
+export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
+</code></pre></div></div>
+
+<p>Diese Maßnahmen tragen dazu bei, die Effizienz des Build-Prozesses zu verbessern und insbesondere bei wiederholter Ausführung die benötigte Zeit zu minimieren.</p>]]></content><author><name></name></author><category term="entwickler" /><summary type="html"><![CDATA[Wenn ein Plug-In oder eine Erweiterung installiert wird, kopiert Shopware den Inhalt des &lt;plugin&gt;/src/Resources/public Ordners in das entsprechende Bundle /public/bundles/plugin-name. Dieser Ordner enthält alle erforderlichen Assets (CSS, JS usw.) in komprimierter und minifizierter Form.]]></summary></entry><entry><title type="html">Shopware.yaml Konfigurationsmöglichkeiten</title><link href="https://blog.jeffblock.de/entwickler/shopbetreiber/2023/10/22/shopware-yaml-konfiguration.html" rel="alternate" type="text/html" title="Shopware.yaml Konfigurationsmöglichkeiten" /><published>2023-10-22T21:37:56+02:00</published><updated>2023-10-22T21:37:56+02:00</updated><id>https://blog.jeffblock.de/entwickler/shopbetreiber/2023/10/22/shopware-yaml-konfiguration</id><content type="html" xml:base="https://blog.jeffblock.de/entwickler/shopbetreiber/2023/10/22/shopware-yaml-konfiguration.html"><![CDATA[<p>Die <code class="language-plaintext highlighter-rouge">shopware.yaml</code> findest du unter <code class="language-plaintext highlighter-rouge">&lt;shopRoot&gt;/config/packages</code>.
+Hier kann Shopware auf der low-level Ebene konfiguriert werden.</p>
+
+<p>In folgendem alle möglichen Konfigurationsmöglichkeiten:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">parameters</span><span class="pi">:</span>
+  <span class="na">default_cdn_strategy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">id"</span>
+  <span class="na">env(APP_URL)</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">APP_URL</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%env(string:APP_URL)%"</span>
+
+<span class="na">shopware</span><span class="pi">:</span>
+  <span class="na">filesystem</span><span class="pi">:</span>
+    <span class="na">private</span><span class="pi">:</span>
+      <span class="na">type</span><span class="pi">:</span> <span class="s2">"</span><span class="s">local"</span>
+      <span class="na">config</span><span class="pi">:</span>
+        <span class="na">root</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%kernel.project_dir%/files"</span>
+    <span class="na">public</span><span class="pi">:</span>
+      <span class="na">type</span><span class="pi">:</span> <span class="s2">"</span><span class="s">local"</span>
+      <span class="na">config</span><span class="pi">:</span>
+        <span class="na">root</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%kernel.project_dir%/public"</span>
+    <span class="na">temp</span><span class="pi">:</span>
+      <span class="na">type</span><span class="pi">:</span> <span class="s2">"</span><span class="s">local"</span>
+      <span class="na">config</span><span class="pi">:</span>
+        <span class="na">root</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%kernel.project_dir%/var"</span>
+    <span class="na">theme</span><span class="pi">:</span>
+    <span class="na">asset</span><span class="pi">:</span>
+    <span class="na">sitemap</span><span class="pi">:</span>
+    <span class="na">allowed_extensions</span><span class="pi">:</span>
+      <span class="pi">[</span>
+        <span class="s2">"</span><span class="s">jpg"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">jpeg"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">png"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">webp"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">gif"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">svg"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">bmp"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">tiff"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">tif"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">eps"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">webm"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">mkv"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">flv"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">ogv"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">ogg"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">mov"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">mp4"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">avi"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">wmv"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">pdf"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">aac"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">mp3"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">wav"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">flac"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">oga"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">wma"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">txt"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">doc"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">ico"</span><span class="pi">,</span>
+      <span class="pi">]</span>
+
+  <span class="na">cdn</span><span class="pi">:</span>
+    <span class="na">url</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+    <span class="na">strategy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%env(string:default:default_cdn_strategy:SHOPWARE_CDN_STRATEGY_DEFAULT)%"</span>
+
+  <span class="na">increment</span><span class="pi">:</span>
+    <span class="na">user_activity</span><span class="pi">:</span>
+      <span class="na">type</span><span class="pi">:</span> <span class="s2">"</span><span class="s">mysql"</span>
+
+      <span class="c1"># type: 'array'</span>
+
+      <span class="c1"># type: 'redis'</span>
+      <span class="c1">#     config:</span>
+      <span class="c1">#         url: 'redis://localhost'</span>
+
+    <span class="na">message_queue</span><span class="pi">:</span>
+      <span class="na">type</span><span class="pi">:</span> <span class="s2">"</span><span class="s">mysql"</span>
+
+      <span class="c1"># type: 'array'</span>
+
+      <span class="c1"># type: 'redis'</span>
+      <span class="c1">#     config:</span>
+      <span class="c1">#         url: 'redis://localhost'</span>
+
+  <span class="na">api</span><span class="pi">:</span>
+    <span class="na">max_limit</span><span class="pi">:</span> <span class="m">100</span>
+    <span class="na">api_browser</span><span class="pi">:</span>
+      <span class="na">auth_required</span><span class="pi">:</span> <span class="kc">true</span>
+    <span class="na">store</span><span class="pi">:</span>
+      <span class="na">context_lifetime</span><span class="pi">:</span> <span class="s2">"</span><span class="s">P1D"</span> <span class="c1"># 1 day interval, see also https://www.php.net/manual/en/dateinterval.construct.php#refsect1-dateinterval.construct-parameters</span>
+    <span class="na">rate_limiter</span><span class="pi">:</span>
+      <span class="na">login</span><span class="pi">:</span>
+        <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+        <span class="na">policy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">time_backoff"</span>
+        <span class="na">reset</span><span class="pi">:</span> <span class="s2">"</span><span class="s">24</span><span class="nv"> </span><span class="s">hours"</span> <span class="c1"># reset limit after this time if no more requests failed</span>
+        <span class="na">limits</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">10</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">10</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">15</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">30</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">20</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">60</span><span class="nv"> </span><span class="s">seconds"</span>
+      <span class="na">guest_login</span><span class="pi">:</span>
+        <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+        <span class="na">policy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">time_backoff"</span>
+        <span class="na">reset</span><span class="pi">:</span> <span class="s2">"</span><span class="s">24</span><span class="nv"> </span><span class="s">hours"</span>
+        <span class="na">limits</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">10</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">10</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">15</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">30</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">20</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">60</span><span class="nv"> </span><span class="s">seconds"</span>
+      <span class="na">oauth</span><span class="pi">:</span>
+        <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+        <span class="na">policy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">time_backoff"</span>
+        <span class="na">reset</span><span class="pi">:</span> <span class="s2">"</span><span class="s">24</span><span class="nv"> </span><span class="s">hours"</span>
+        <span class="na">limits</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">10</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">10</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">15</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">30</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">20</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">60</span><span class="nv"> </span><span class="s">seconds"</span>
+      <span class="na">reset_password</span><span class="pi">:</span>
+        <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+        <span class="na">policy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">time_backoff"</span>
+        <span class="na">reset</span><span class="pi">:</span> <span class="s2">"</span><span class="s">24</span><span class="nv"> </span><span class="s">hours"</span>
+        <span class="na">limits</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">3</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">30</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">5</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">60</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">10</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">90</span><span class="nv"> </span><span class="s">seconds"</span>
+      <span class="na">user_recovery</span><span class="pi">:</span>
+        <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+        <span class="na">policy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">time_backoff"</span>
+        <span class="na">reset</span><span class="pi">:</span> <span class="s2">"</span><span class="s">24</span><span class="nv"> </span><span class="s">hours"</span>
+        <span class="na">limits</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">3</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">30</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">5</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">60</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">10</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">90</span><span class="nv"> </span><span class="s">seconds"</span>
+      <span class="na">contact_form</span><span class="pi">:</span>
+        <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+        <span class="na">policy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">time_backoff"</span>
+        <span class="na">reset</span><span class="pi">:</span> <span class="s2">"</span><span class="s">24</span><span class="nv"> </span><span class="s">hours"</span>
+        <span class="na">limits</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">3</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">30</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">5</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">60</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">10</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">90</span><span class="nv"> </span><span class="s">seconds"</span>
+      <span class="na">notification</span><span class="pi">:</span>
+        <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+        <span class="na">policy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">time_backoff"</span>
+        <span class="na">reset</span><span class="pi">:</span> <span class="s2">"</span><span class="s">24</span><span class="nv"> </span><span class="s">hours"</span>
+        <span class="na">limits</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">10</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">10</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">15</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">30</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">20</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">60</span><span class="nv"> </span><span class="s">seconds"</span>
+
+  <span class="na">admin_worker</span><span class="pi">:</span>
+    <span class="na">enable_admin_worker</span><span class="pi">:</span> <span class="kc">true</span>
+    <span class="c1"># This has to be lower than PHP's max_execution_time (default: 30s)</span>
+    <span class="na">poll_interval</span><span class="pi">:</span> <span class="m">20</span>
+    <span class="na">transports</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">default"</span><span class="pi">]</span>
+
+  <span class="na">auto_update</span><span class="pi">:</span>
+    <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+
+  <span class="na">store</span><span class="pi">:</span>
+    <span class="na">frw</span><span class="pi">:</span> <span class="kc">false</span>
+
+  <span class="na">sitemap</span><span class="pi">:</span>
+    <span class="na">batchsize</span><span class="pi">:</span> <span class="m">100</span>
+    <span class="na">custom_urls</span><span class="pi">:</span>
+    <span class="na">excluded_urls</span><span class="pi">:</span>
+
+  <span class="na">deployment</span><span class="pi">:</span>
+    <span class="na">blue_green</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%env(bool:default:defaults_bool_true:BLUE_GREEN_DEPLOYMENT)%"</span>
+
+  <span class="na">media</span><span class="pi">:</span>
+    <span class="na">enable_url_upload_feature</span><span class="pi">:</span> <span class="kc">true</span>
+    <span class="na">enable_url_validation</span><span class="pi">:</span> <span class="kc">true</span>
+
+  <span class="na">dal</span><span class="pi">:</span>
+    <span class="na">batch_size</span><span class="pi">:</span> <span class="m">125</span>
+    <span class="na">versioning</span><span class="pi">:</span>
+      <span class="na">expire_days</span><span class="pi">:</span> <span class="m">30</span>
+
+  <span class="na">cart</span><span class="pi">:</span>
+    <span class="na">expire_days</span><span class="pi">:</span> <span class="m">120</span>
+
+  <span class="na">sales_channel_context</span><span class="pi">:</span>
+    <span class="na">expire_days</span><span class="pi">:</span> <span class="m">120</span>
+
+  <span class="na">html_sanitizer</span><span class="pi">:</span>
+    <span class="na">cache_dir</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%kernel.cache_dir%"</span>
+    <span class="na">cache_enabled</span><span class="pi">:</span> <span class="kc">true</span>
+    <span class="na">sets</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">basic</span>
+        <span class="na">tags</span><span class="pi">:</span>
+          <span class="pi">[</span>
+            <span class="s2">"</span><span class="s">a"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">abbr"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">acronym"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">address"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">b"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">bdo"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">big"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">blockquote"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">br"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">caption"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">center"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">cite"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">code"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">col"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">colgroup"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">dd"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">del"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">dfn"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">dir"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">div"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">dl"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">dt"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">em"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">font"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">h1"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">h2"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">h3"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">h4"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">h5"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">h6"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">hr"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">i"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">ins"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">kbd"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">li"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">menu"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">ol"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">p"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">pre"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">q"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">s"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">samp"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">small"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">span"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">strike"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">strong"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">sub"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">sup"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">table"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">tbody"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">td"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">tfoot"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">th"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">thead"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">tr"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">tt"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">u"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">ul"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">var"</span><span class="pi">,</span>
+          <span class="pi">]</span>
+        <span class="na">attributes</span><span class="pi">:</span>
+          <span class="pi">[</span>
+            <span class="s2">"</span><span class="s">align"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">bgcolor"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">border"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">cellpadding"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">cellspacing"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">cite"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">class"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">clear"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">color"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">colspan"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">dir"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">face"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">frame"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">height"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">href"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">id"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">lang"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">name"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">noshade"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">nowrap"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">rel"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">rev"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">rowspan"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">scope"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">size"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">span"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">start"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">style"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">summary"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">title"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">type"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">valign"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">value"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">width"</span><span class="pi">,</span>
+          <span class="pi">]</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">media</span>
+        <span class="na">tags</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">img"</span><span class="pi">]</span>
+        <span class="na">attributes</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">src"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">alt"</span><span class="pi">]</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">script</span>
+        <span class="na">tags</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">script"</span><span class="pi">]</span>
+        <span class="na">options</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">HTML.Trusted</span>
+            <span class="na">value</span><span class="pi">:</span> <span class="kc">true</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">tidy</span>
+        <span class="na">options</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">Output.TidyFormat</span>
+            <span class="na">value</span><span class="pi">:</span> <span class="kc">true</span>
+    <span class="na">fields</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">product_translation.description</span>
+        <span class="na">sets</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">basic"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">media"</span><span class="pi">]</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">app_cms_block.template</span>
+        <span class="na">sets</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">basic"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">media"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">tidy"</span><span class="pi">]</span>
+
+  <span class="na">logger</span><span class="pi">:</span>
+    <span class="na">file_rotation_count</span><span class="pi">:</span> <span class="m">14</span>
+    <span class="na">exclude_exception</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">League\OAuth2\Server\Exception\OAuthServerException</span>
+
+  <span class="na">cache</span><span class="pi">:</span>
+    <span class="na">invalidation</span><span class="pi">:</span>
+      <span class="na">delay</span><span class="pi">:</span> <span class="m">0</span>
+      <span class="na">count</span><span class="pi">:</span> <span class="m">150</span>
+      <span class="na">http_cache</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">logged-in"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">cart-filled"</span><span class="pi">]</span>
+      <span class="na">product_listing_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">product_detail_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">product_review_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">product_search_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">product_suggest_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">product_cross_selling_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">payment_method_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">shipping_method_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">navigation_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">category_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">landing_page_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">language_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">currency_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">country_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">salutation_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">sitemap_route</span><span class="pi">:</span> <span class="pi">[]</span>
+</code></pre></div></div>]]></content><author><name></name></author><category term="entwickler" /><category term="shopbetreiber" /><summary type="html"><![CDATA[Die shopware.yaml findest du unter &lt;shopRoot&gt;/config/packages. Hier kann Shopware auf der low-level Ebene konfiguriert werden.]]></summary></entry><entry><title type="html">EntityRepository dynamisch anhand eines Namens laden</title><link href="https://blog.jeffblock.de/entwickler/2023/10/15/entity-repository-dynamisch-laden.html" rel="alternate" type="text/html" title="EntityRepository dynamisch anhand eines Namens laden" /><published>2023-10-15T21:37:56+02:00</published><updated>2023-10-15T21:37:56+02:00</updated><id>https://blog.jeffblock.de/entwickler/2023/10/15/entity-repository-dynamisch-laden</id><content type="html" xml:base="https://blog.jeffblock.de/entwickler/2023/10/15/entity-repository-dynamisch-laden.html"><![CDATA[<p>Jede Entität in Shopware hat ein Repository.
+Die <code class="language-plaintext highlighter-rouge">ProductEntity</code> kann mit einem <code class="language-plaintext highlighter-rouge">ProductRepository</code> geladen werden, die <code class="language-plaintext highlighter-rouge">CustomerEntity</code> kann mit einem <code class="language-plaintext highlighter-rouge">CustomerRepository</code> geladen werden, etc.</p>
+
+<p>Wenn ein Service oder eine Klasse nun spezifische Entitäten laden muss, wird das jeweilige Repository über die <code class="language-plaintext highlighter-rouge">services.xml</code> bzw <code class="language-plaintext highlighter-rouge">services.yml</code> injected.</p>
+
+<p>Was ist aber, wenn du zum Zeitpunkt des injectens noch gar nicht weißt, welche Entität du benötigst und du zusätzlich keinen compilerPass verwenden möchtest?</p>
+
+<p>In dem Fall, kannst du dynamisch das benötigte repository laden, und das geht so:</p>
+
+<p>Wir nutzen die <code class="language-plaintext highlighter-rouge">DefinitionInstanceRegistry</code> und laden das repository. Die Registry benötigt dazu nur den Namen der Entity. Dieser kann entweder direkt angegeben, oder aber über ein Entity-Objekt geholt werden.</p>
+
+<p>Ich nutze diese Methode z.B. zum eine Entität mit weiteren Associations neu zu laden. Damit ich nicht für jede Entität eine eigene Methode schreiben muss, nimmt meine Methode einfach die Entität entgegen und lädt sich auf Basis des Namens das benötigte Repository. Anschließend werden die Associations hinzugefügt, mittels DAL die Entität neu geladen und zurückgegeben.</p>
+
+<p>Das ganze sieht dann so aus:</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">private</span> <span class="k">function</span> <span class="n">reloadEntityWithAssociations</span><span class="p">(</span>
+    <span class="kt">Entity</span> <span class="nv">$entity</span><span class="p">,</span>
+    <span class="kt">array</span> <span class="nv">$associations</span><span class="p">,</span>
+    <span class="kt">DefinitionInstanceRegistry</span> <span class="nv">$registry</span><span class="p">,</span>
+    <span class="kt">Context</span> <span class="nv">$context</span>
+<span class="p">)</span> <span class="p">:</span> <span class="kt">Entity</span><span class="p">{</span>
+
+    <span class="cd">/** @var string $entityName */</span>
+    <span class="nv">$entityName</span> <span class="o">=</span> <span class="p">(</span><span class="nv">$registry</span><span class="o">-&gt;</span><span class="nf">getByEntityClass</span><span class="p">(</span><span class="nv">$entity</span><span class="p">))</span><span class="o">-&gt;</span><span class="nf">getEntityName</span><span class="p">();</span>
+
+    <span class="cd">/** @var EntityRepositoryInterface $repo */</span>
+    <span class="nv">$repo</span> <span class="o">=</span> <span class="nv">$registry</span><span class="o">-&gt;</span><span class="nf">getRepository</span><span class="p">(</span><span class="nv">$entityName</span><span class="p">);</span>
+
+    <span class="nv">$criteria</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Criteria</span><span class="p">();</span>
+    <span class="nv">$criteria</span><span class="o">-&gt;</span><span class="nf">addFilter</span><span class="p">(</span><span class="k">new</span> <span class="nc">EqualsFilter</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="nv">$entity</span><span class="o">-&gt;</span><span class="nf">getId</span><span class="p">()));</span>
+    <span class="nv">$criteria</span><span class="o">-&gt;</span><span class="nf">addAssociations</span><span class="p">(</span><span class="nv">$associations</span><span class="p">);</span>
+    <span class="nv">$criteria</span><span class="o">-&gt;</span><span class="nf">setLimit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="nv">$repo</span><span class="o">-&gt;</span><span class="nf">search</span><span class="p">(</span><span class="nv">$criteria</span><span class="p">,</span> <span class="nv">$context</span><span class="p">))</span><span class="o">-&gt;</span><span class="nf">first</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div></div>]]></content><author><name></name></author><category term="entwickler" /><summary type="html"><![CDATA[Jede Entität in Shopware hat ein Repository. Die ProductEntity kann mit einem ProductRepository geladen werden, die CustomerEntity kann mit einem CustomerRepository geladen werden, etc.]]></summary></entry><entry><title type="html">Expected input to be non empty non associative array.</title><link href="https://blog.jeffblock.de/entwickler/2023/10/08/expted-input-to-be-non-empty.html" rel="alternate" type="text/html" title="Expected input to be non empty non associative array." /><published>2023-10-08T21:37:56+02:00</published><updated>2023-10-08T21:37:56+02:00</updated><id>https://blog.jeffblock.de/entwickler/2023/10/08/expted-input-to-be-non-empty</id><content type="html" xml:base="https://blog.jeffblock.de/entwickler/2023/10/08/expted-input-to-be-non-empty.html"><![CDATA[<p>Dieser Fehler tritt häufig auf, wenn Daten über ein repository gespeichert werden sollen. Wenn die <code class="language-plaintext highlighter-rouge">upsert</code>, <code class="language-plaintext highlighter-rouge">update</code> oder <code class="language-plaintext highlighter-rouge">create</code> Methode des repositories verwendet wird, wird ein <strong>verschachteltes</strong> Array erwartet.</p>
+
+<p>Nehmen wir folgenden Code als Beispiel:</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$data</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">'id'</span> <span class="o">=&gt;</span> <span class="s1">'abcd123...'</span><span class="p">,</span>
+    <span class="s1">'name'</span> <span class="o">=&gt;</span> <span class="s1">'Beispiel Name'</span>
+<span class="p">];</span>
+<span class="nv">$productRepository</span><span class="o">-&gt;</span><span class="nf">update</span><span class="p">(</span><span class="nv">$data</span><span class="p">,</span> <span class="nv">$context</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Dieser Code würde den Fehler <code class="language-plaintext highlighter-rouge">Expected input to be non empty non associative array</code> verursachen.</p>
+
+<p><strong>Die Lösung:</strong></p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$data</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">'id'</span> <span class="o">=&gt;</span> <span class="s1">'abcd123...'</span><span class="p">,</span>
+    <span class="s1">'name'</span> <span class="o">=&gt;</span> <span class="s1">'Beispiel Name'</span>
+<span class="p">];</span>
+<span class="nv">$productRepository</span><span class="o">-&gt;</span><span class="nf">update</span><span class="p">([</span><span class="nv">$data</span><span class="p">],</span> <span class="nv">$context</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>oder</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$data</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span>
+        <span class="s1">'id'</span> <span class="o">=&gt;</span> <span class="s1">'abcd123...'</span><span class="p">,</span>
+        <span class="s1">'name'</span> <span class="o">=&gt;</span> <span class="s1">'Beispiel Name'</span>
+    <span class="p">]</span>
+<span class="p">];</span>
+<span class="nv">$productRepository</span><span class="o">-&gt;</span><span class="nf">update</span><span class="p">(</span><span class="nv">$data</span><span class="p">,</span> <span class="nv">$context</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Der Grund, wieso ein verschachteltes Array übergeben muss, ist recht simpel:
+Es können mehrere Entities auf einmal übergeben/bearbeitet werden.
+Wenn kein verschachteltes Array erwartet werden würde, müsste für jede Entity ein eigenständiger Aufruf gemacht werden.</p>]]></content><author><name></name></author><category term="entwickler" /><summary type="html"><![CDATA[Dieser Fehler tritt häufig auf, wenn Daten über ein repository gespeichert werden sollen. Wenn die upsert, update oder create Methode des repositories verwendet wird, wird ein verschachteltes Array erwartet.]]></summary></entry><entry><title type="html">Wartungsmodus mit Passwortschutz</title><link href="https://blog.jeffblock.de/shopbetreiber/2023/10/01/wartungsmodus-mit-passwortschutz.html" rel="alternate" type="text/html" title="Wartungsmodus mit Passwortschutz" /><published>2023-10-01T21:37:00+02:00</published><updated>2023-10-01T21:37:00+02:00</updated><id>https://blog.jeffblock.de/shopbetreiber/2023/10/01/wartungsmodus-mit-passwortschutz</id><content type="html" xml:base="https://blog.jeffblock.de/shopbetreiber/2023/10/01/wartungsmodus-mit-passwortschutz.html"><![CDATA[<p>Kennst du das? Du möchtest nur kurz etwas im DEV Shop oder auf der Staging umgebung überprüfen und wirst freundlich von der <strong>Wartungsmodus</strong> Seite begrüßt.
+Jetzt darfst du dich erstmal im Admin anmelden, den Sales-Channel auswählen und deine IP Whitelisten, bevor du den Shop sehen kannst.
+Das selbe passiert dir auch Morgen und übermororgen.</p>
+
+<p>Ziemlich nervig. Wäre es nicht cool, die <strong>Wartungsmodusseite mit einem Passwort zu versehen</strong>, sodass bei korrekter Eingabe deine IP <strong>automatisch</strong> zur Whitelist hinzugefügt wird?
+Kein einloggen ins Admin, kein manuelles whitelisten - Passwort eingeben und fertig!</p>
+
+<p>Genau das macht das Plug-In, welches Gratis und open-source auf GitHub für Shopware 6.5 zur Verfügung steht.
+Einfach die .zip runterladen, installieren, Passwort in der Konfiguration festlegen und fertig…</p>
+
+<p>Klingt gut? Hier gehts zum Plug-In:
+<a href="https://github.com/Gainto/JblMaintenanceLogin">Gainto/JblMaintenanceLogin</a></p>]]></content><author><name></name></author><category term="shopbetreiber" /><summary type="html"><![CDATA[Kennst du das? Du möchtest nur kurz etwas im DEV Shop oder auf der Staging umgebung überprüfen und wirst freundlich von der Wartungsmodus Seite begrüßt. Jetzt darfst du dich erstmal im Admin anmelden, den Sales-Channel auswählen und deine IP Whitelisten, bevor du den Shop sehen kannst. Das selbe passiert dir auch Morgen und übermororgen.]]></summary></entry></feed>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="de">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="/assets/css/normalize.css"/>
+    <link rel="stylesheet" href="/assets/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="/assets/css/open-color.css"/>
+    <link rel="stylesheet" href="/assets/css/quartz.css"/>
+    <link rel="stylesheet" href="/assets/css/custom.css"/>
+
+    <script async src="https://use.fontawesome.com/releases/v6.0.0/js/all.js"></script>
+
+    <link href='http://fonts.googleapis.com/css?family=Tangerine|Sintony:400,700' rel='stylesheet' type='text/css'>
+
+    
+</head>
+
+  <body>
+    <div class="wrapper">
+
+      
+        <header class="site-header outer">
+  <div class="inner">
+    <div class="site-header-small-content">
+      <h4 class="site-title">
+        <a href="/">Shopware6 knowledge base</a>
+      </h4>
+      
+        <nav class="nav">
+          
+            <a class="nav-item " href="/">
+              Home
+            </a>
+          
+            <a class="nav-item " href="/plugins">
+              Plug-Ins
+            </a>
+          
+            <a class="nav-item " href="https://jeffblock.de">
+              About <i class="fa fa-external-link" aria-hidden="true"></i>
+            </a>
+          
+        </nav>
+      
+    </div>
+  </div>
+</header>
+
+      
+
+      <main class="main outer">
+        <div class="inner">
+          <article class="post">
+  <div class="post-meta post-meta-top">
+    <div>
+      <time datetime="2023-11-19T20:37:56+01:00">
+        <i class="fa-solid fa-calendar-days"></i> 19 Nov 2023
+      </time></div>
+    
+    
+      <nav class="post-categories">
+        <i class="fa-solid fa-folder"></i>
+        
+          
+            <span>entwickler</span> /
+          
+        
+      </nav>
+    
+  </div>
+
+  <h1 class="post-title">Shopware6 und die UUIDs</h1>
+
+  
+    <figure class="post-cover" style="background-image: url(/assets/images/shopware-uuids.png)">
+    </figure>
+  
+
+  <div class="post-content">
+    <p>Shopware 6 setzt auf die Verwendung von UUIDs <a href="https://de.wikipedia.org/wiki/Universally_Unique_Identifier">Universally Unique Identifiers</a> anstelle der klassischen sequentiellen IDs.
+Obwohl UUIDs zahlreiche Vorteile bieten (im Vergleich zu sequentiellen IDs), können sie das Leben eines Entwicklers gelegentlich komplizierter gestalten. Insbesondere wenn man schnell auf Datenbankdaten zugreifen möchte, können UUIDs eine zusätzliche Herausforderung darstellen.</p>
+
+<p>Um die Entwicklergemeinschaft bestmöglich zu unterstützen, werden im Folgenden Lösungsansätze vorgestellt, wie Datensätze in Shopware 6 anhand von UUIDs aktualisiert, erstellt oder transformiert werden können.</p>
+
+<p>Allgemein werden UUIDs in der Datenbank als BINARY-Daten gespeichert und in der Regel in hexadezimaler Form dargestellt. Wenn eine ID in der Datenbank gespeichert werden soll, erfolgt dies als BINARY, und beim Auslesen werden die BINARY-Daten extrahiert und in Hex umgewandelt.</p>
+
+<p><strong>Beispiele:</strong></p>
+
+<p><strong>Cast as BINARY:</strong></p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">UPDATE</span> <span class="nv">`order`</span> <span class="k">SET</span> <span class="nv">`state_id`</span> <span class="o">=</span> <span class="mi">0</span><span class="n">xca58b0b780014a35b26291dfd7fbe6b3</span> <span class="k">WHERE</span> <span class="nv">`order`</span><span class="p">.</span><span class="nv">`id`</span> <span class="o">=</span> <span class="k">CAST</span><span class="p">(</span><span class="mi">0</span><span class="n">xfd9884b375d145389e4dd780b7e49f52</span> <span class="k">AS</span> <span class="nb">BINARY</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><strong>Unhex:</strong></p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">INSERT</span> <span class="k">INTO</span> <span class="nv">`customer_tag`</span> <span class="p">(</span><span class="nv">`customer_id`</span><span class="p">,</span> <span class="nv">`tag_id`</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="n">UNHEX</span><span class="p">(</span><span class="s1">'CFBD5018D38D41D8ADCA10D94FC8BDD6'</span><span class="p">),</span><span class="n">UNHEX</span><span class="p">(</span><span class="s1">'CFBD5018D38D41D8ADCA10D94FC8BDD2'</span><span class="p">));</span>
+</code></pre></div></div>
+
+<p><strong>Hex:</strong></p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">SELECT</span> <span class="k">LOWER</span><span class="p">(</span><span class="n">HEX</span><span class="p">(</span><span class="n">cms_page_id</span><span class="p">))</span> <span class="k">as</span> <span class="n">cms_page_id</span> <span class="k">FROM</span> <span class="n">cms_page_translation</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p><strong>UUID als BLOB in Hexadezimaler Form darstellen (UUID zu BINARY):</strong></p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">SELECT</span> <span class="n">id</span> <span class="k">FROM</span> <span class="n">customer</span> <span class="k">WHERE</span> <span class="n">id</span> <span class="o">=</span> <span class="n">X</span><span class="s1">'6F9619FF8B86D011B42D00C04FC964FF'</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>Zur Erzeugung zufällig generierter, 32 Zeichen langer Hex-IDs kann der folgende Generator verwendet werden: <a href="https://www.browserling.com/tools/random-hex">Random Hex Generator</a></p>
+
+<p>Wenn sich der Code im Shopware-Kontext befindet, bietet Shopware eine Klasse an, die die Arbeit erleichtert und das manuelle Konvertieren von A nach B überflüssig macht.
+Hierbei kann die Klasse <code class="language-plaintext highlighter-rouge">Shopware\Core\Framework\Uuid\Uuid</code> genutzt werden, mit Methoden wie:</p>
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Uuid</span><span class="o">::</span><span class="nf">randomBytes</span><span class="p">()</span>
+<span class="nc">Uuid</span><span class="o">::</span><span class="nf">fromBytesToHex</span><span class="p">()</span>
+<span class="nc">Uuid</span><span class="o">::</span><span class="nf">fromHexToBytes</span><span class="p">()</span>
+<span class="nc">Uuid</span><span class="o">::</span><span class="nf">isValid</span><span class="p">()</span>
+</code></pre></div></div>
+
+  </div>
+
+  
+</article>
+
+<aside class="pagination post-pagination">
+  
+    <a class="prev post-prev" href="/entwickler/2023/11/12/schnelles-wechseln-dev-prod.html">
+      <i class="fas fa-chevron-left"></i> <span class="">Schnelles wechseln zwischen DEV und PROD
+</span>
+    </a>
+  
+  
+  
+    <a class="next post-next" href="/entwickler/2023/11/26/als-kunde-im-storefront-anmelden.html">
+      <span class="">Als Kunde im Storefront anmelden
+</span> <i class="fas fa-chevron-right"></i> 
+    </a>
+  
+</aside>
+
+
+
+        </div>
+      </main>
+
+      <footer class="footer outer">
+  <div class="inner">
+    <div class="columns">
+      <p class="column">
+        &copy; <time datetime="2023-11-28T22:38:45+01:00">2023</time>. All rights reserved.
+      </p>
+  
+      <p class="column">
+        Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> & <a href="https://github.com/vfvong/jekyll-theme-quartz" target="_blank">Quartz</a>
+      </p>
+  
+      
+      <p class="column">
+        Nützliches Wissen, Helfer und Quick-Tipps rund um Shopware6
+      </p>
+      
+
+      
+      <div class="column social">
+        
+          <a href="mailto:hello@jeffblock.de" target="_blank">
+            <i class="fas fa-envelope" title="Email"></i>
+          </a>
+        
+          <a href="https://twitter.com/block_jeff" target="_blank">
+            <i class="fab fa-twitter" title="Twitter"></i>
+          </a>
+        
+          <a href="https://github.com/gainto" target="_blank">
+            <i class="fab fa-github" title="GitHub"></i>
+          </a>
+        
+      </div>
+      
+    </div>      
+  </div>
+</footer>
+
+    </div>
+
+    
+
+    
+  </body>
+</html>

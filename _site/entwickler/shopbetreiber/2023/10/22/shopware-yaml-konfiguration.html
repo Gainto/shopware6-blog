@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="de">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="/assets/css/normalize.css"/>
+    <link rel="stylesheet" href="/assets/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="/assets/css/open-color.css"/>
+    <link rel="stylesheet" href="/assets/css/quartz.css"/>
+    <link rel="stylesheet" href="/assets/css/custom.css"/>
+
+    <script async src="https://use.fontawesome.com/releases/v6.0.0/js/all.js"></script>
+
+    <link href='http://fonts.googleapis.com/css?family=Tangerine|Sintony:400,700' rel='stylesheet' type='text/css'>
+
+    
+</head>
+
+  <body>
+    <div class="wrapper">
+
+      
+        <header class="site-header outer">
+  <div class="inner">
+    <div class="site-header-small-content">
+      <h4 class="site-title">
+        <a href="/">Shopware6 knowledge base</a>
+      </h4>
+      
+        <nav class="nav">
+          
+            <a class="nav-item " href="/">
+              Home
+            </a>
+          
+            <a class="nav-item " href="/plugins">
+              Plug-Ins
+            </a>
+          
+            <a class="nav-item " href="https://jeffblock.de">
+              About <i class="fa fa-external-link" aria-hidden="true"></i>
+            </a>
+          
+        </nav>
+      
+    </div>
+  </div>
+</header>
+
+      
+
+      <main class="main outer">
+        <div class="inner">
+          <article class="post">
+  <div class="post-meta post-meta-top">
+    <div>
+      <time datetime="2023-10-22T21:37:56+02:00">
+        <i class="fa-solid fa-calendar-days"></i> 22 Oct 2023
+      </time></div>
+    
+    
+      <nav class="post-categories">
+        <i class="fa-solid fa-folder"></i>
+        
+          
+            <span>entwickler</span> /
+          
+        
+          
+            <span>shopbetreiber</span> /
+          
+        
+      </nav>
+    
+  </div>
+
+  <h1 class="post-title">Shopware.yaml Konfigurationsmöglichkeiten</h1>
+
+  
+    <figure class="post-cover" style="background-image: url(/assets/images/shopware-yaml.png)">
+    </figure>
+  
+
+  <div class="post-content">
+    <p>Die <code class="language-plaintext highlighter-rouge">shopware.yaml</code> findest du unter <code class="language-plaintext highlighter-rouge">&lt;shopRoot&gt;/config/packages</code>.
+Hier kann Shopware auf der low-level Ebene konfiguriert werden.</p>
+
+<p>In folgendem alle möglichen Konfigurationsmöglichkeiten:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">parameters</span><span class="pi">:</span>
+  <span class="na">default_cdn_strategy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">id"</span>
+  <span class="na">env(APP_URL)</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">APP_URL</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%env(string:APP_URL)%"</span>
+
+<span class="na">shopware</span><span class="pi">:</span>
+  <span class="na">filesystem</span><span class="pi">:</span>
+    <span class="na">private</span><span class="pi">:</span>
+      <span class="na">type</span><span class="pi">:</span> <span class="s2">"</span><span class="s">local"</span>
+      <span class="na">config</span><span class="pi">:</span>
+        <span class="na">root</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%kernel.project_dir%/files"</span>
+    <span class="na">public</span><span class="pi">:</span>
+      <span class="na">type</span><span class="pi">:</span> <span class="s2">"</span><span class="s">local"</span>
+      <span class="na">config</span><span class="pi">:</span>
+        <span class="na">root</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%kernel.project_dir%/public"</span>
+    <span class="na">temp</span><span class="pi">:</span>
+      <span class="na">type</span><span class="pi">:</span> <span class="s2">"</span><span class="s">local"</span>
+      <span class="na">config</span><span class="pi">:</span>
+        <span class="na">root</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%kernel.project_dir%/var"</span>
+    <span class="na">theme</span><span class="pi">:</span>
+    <span class="na">asset</span><span class="pi">:</span>
+    <span class="na">sitemap</span><span class="pi">:</span>
+    <span class="na">allowed_extensions</span><span class="pi">:</span>
+      <span class="pi">[</span>
+        <span class="s2">"</span><span class="s">jpg"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">jpeg"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">png"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">webp"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">gif"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">svg"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">bmp"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">tiff"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">tif"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">eps"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">webm"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">mkv"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">flv"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">ogv"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">ogg"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">mov"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">mp4"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">avi"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">wmv"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">pdf"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">aac"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">mp3"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">wav"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">flac"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">oga"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">wma"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">txt"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">doc"</span><span class="pi">,</span>
+        <span class="s2">"</span><span class="s">ico"</span><span class="pi">,</span>
+      <span class="pi">]</span>
+
+  <span class="na">cdn</span><span class="pi">:</span>
+    <span class="na">url</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+    <span class="na">strategy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%env(string:default:default_cdn_strategy:SHOPWARE_CDN_STRATEGY_DEFAULT)%"</span>
+
+  <span class="na">increment</span><span class="pi">:</span>
+    <span class="na">user_activity</span><span class="pi">:</span>
+      <span class="na">type</span><span class="pi">:</span> <span class="s2">"</span><span class="s">mysql"</span>
+
+      <span class="c1"># type: 'array'</span>
+
+      <span class="c1"># type: 'redis'</span>
+      <span class="c1">#     config:</span>
+      <span class="c1">#         url: 'redis://localhost'</span>
+
+    <span class="na">message_queue</span><span class="pi">:</span>
+      <span class="na">type</span><span class="pi">:</span> <span class="s2">"</span><span class="s">mysql"</span>
+
+      <span class="c1"># type: 'array'</span>
+
+      <span class="c1"># type: 'redis'</span>
+      <span class="c1">#     config:</span>
+      <span class="c1">#         url: 'redis://localhost'</span>
+
+  <span class="na">api</span><span class="pi">:</span>
+    <span class="na">max_limit</span><span class="pi">:</span> <span class="m">100</span>
+    <span class="na">api_browser</span><span class="pi">:</span>
+      <span class="na">auth_required</span><span class="pi">:</span> <span class="kc">true</span>
+    <span class="na">store</span><span class="pi">:</span>
+      <span class="na">context_lifetime</span><span class="pi">:</span> <span class="s2">"</span><span class="s">P1D"</span> <span class="c1"># 1 day interval, see also https://www.php.net/manual/en/dateinterval.construct.php#refsect1-dateinterval.construct-parameters</span>
+    <span class="na">rate_limiter</span><span class="pi">:</span>
+      <span class="na">login</span><span class="pi">:</span>
+        <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+        <span class="na">policy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">time_backoff"</span>
+        <span class="na">reset</span><span class="pi">:</span> <span class="s2">"</span><span class="s">24</span><span class="nv"> </span><span class="s">hours"</span> <span class="c1"># reset limit after this time if no more requests failed</span>
+        <span class="na">limits</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">10</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">10</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">15</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">30</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">20</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">60</span><span class="nv"> </span><span class="s">seconds"</span>
+      <span class="na">guest_login</span><span class="pi">:</span>
+        <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+        <span class="na">policy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">time_backoff"</span>
+        <span class="na">reset</span><span class="pi">:</span> <span class="s2">"</span><span class="s">24</span><span class="nv"> </span><span class="s">hours"</span>
+        <span class="na">limits</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">10</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">10</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">15</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">30</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">20</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">60</span><span class="nv"> </span><span class="s">seconds"</span>
+      <span class="na">oauth</span><span class="pi">:</span>
+        <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+        <span class="na">policy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">time_backoff"</span>
+        <span class="na">reset</span><span class="pi">:</span> <span class="s2">"</span><span class="s">24</span><span class="nv"> </span><span class="s">hours"</span>
+        <span class="na">limits</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">10</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">10</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">15</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">30</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">20</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">60</span><span class="nv"> </span><span class="s">seconds"</span>
+      <span class="na">reset_password</span><span class="pi">:</span>
+        <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+        <span class="na">policy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">time_backoff"</span>
+        <span class="na">reset</span><span class="pi">:</span> <span class="s2">"</span><span class="s">24</span><span class="nv"> </span><span class="s">hours"</span>
+        <span class="na">limits</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">3</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">30</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">5</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">60</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">10</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">90</span><span class="nv"> </span><span class="s">seconds"</span>
+      <span class="na">user_recovery</span><span class="pi">:</span>
+        <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+        <span class="na">policy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">time_backoff"</span>
+        <span class="na">reset</span><span class="pi">:</span> <span class="s2">"</span><span class="s">24</span><span class="nv"> </span><span class="s">hours"</span>
+        <span class="na">limits</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">3</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">30</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">5</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">60</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">10</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">90</span><span class="nv"> </span><span class="s">seconds"</span>
+      <span class="na">contact_form</span><span class="pi">:</span>
+        <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+        <span class="na">policy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">time_backoff"</span>
+        <span class="na">reset</span><span class="pi">:</span> <span class="s2">"</span><span class="s">24</span><span class="nv"> </span><span class="s">hours"</span>
+        <span class="na">limits</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">3</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">30</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">5</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">60</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">10</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">90</span><span class="nv"> </span><span class="s">seconds"</span>
+      <span class="na">notification</span><span class="pi">:</span>
+        <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+        <span class="na">policy</span><span class="pi">:</span> <span class="s2">"</span><span class="s">time_backoff"</span>
+        <span class="na">reset</span><span class="pi">:</span> <span class="s2">"</span><span class="s">24</span><span class="nv"> </span><span class="s">hours"</span>
+        <span class="na">limits</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">10</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">10</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">15</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">30</span><span class="nv"> </span><span class="s">seconds"</span>
+          <span class="pi">-</span> <span class="na">limit</span><span class="pi">:</span> <span class="m">20</span>
+            <span class="na">interval</span><span class="pi">:</span> <span class="s2">"</span><span class="s">60</span><span class="nv"> </span><span class="s">seconds"</span>
+
+  <span class="na">admin_worker</span><span class="pi">:</span>
+    <span class="na">enable_admin_worker</span><span class="pi">:</span> <span class="kc">true</span>
+    <span class="c1"># This has to be lower than PHP's max_execution_time (default: 30s)</span>
+    <span class="na">poll_interval</span><span class="pi">:</span> <span class="m">20</span>
+    <span class="na">transports</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">default"</span><span class="pi">]</span>
+
+  <span class="na">auto_update</span><span class="pi">:</span>
+    <span class="na">enabled</span><span class="pi">:</span> <span class="kc">true</span>
+
+  <span class="na">store</span><span class="pi">:</span>
+    <span class="na">frw</span><span class="pi">:</span> <span class="kc">false</span>
+
+  <span class="na">sitemap</span><span class="pi">:</span>
+    <span class="na">batchsize</span><span class="pi">:</span> <span class="m">100</span>
+    <span class="na">custom_urls</span><span class="pi">:</span>
+    <span class="na">excluded_urls</span><span class="pi">:</span>
+
+  <span class="na">deployment</span><span class="pi">:</span>
+    <span class="na">blue_green</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%env(bool:default:defaults_bool_true:BLUE_GREEN_DEPLOYMENT)%"</span>
+
+  <span class="na">media</span><span class="pi">:</span>
+    <span class="na">enable_url_upload_feature</span><span class="pi">:</span> <span class="kc">true</span>
+    <span class="na">enable_url_validation</span><span class="pi">:</span> <span class="kc">true</span>
+
+  <span class="na">dal</span><span class="pi">:</span>
+    <span class="na">batch_size</span><span class="pi">:</span> <span class="m">125</span>
+    <span class="na">versioning</span><span class="pi">:</span>
+      <span class="na">expire_days</span><span class="pi">:</span> <span class="m">30</span>
+
+  <span class="na">cart</span><span class="pi">:</span>
+    <span class="na">expire_days</span><span class="pi">:</span> <span class="m">120</span>
+
+  <span class="na">sales_channel_context</span><span class="pi">:</span>
+    <span class="na">expire_days</span><span class="pi">:</span> <span class="m">120</span>
+
+  <span class="na">html_sanitizer</span><span class="pi">:</span>
+    <span class="na">cache_dir</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%kernel.cache_dir%"</span>
+    <span class="na">cache_enabled</span><span class="pi">:</span> <span class="kc">true</span>
+    <span class="na">sets</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">basic</span>
+        <span class="na">tags</span><span class="pi">:</span>
+          <span class="pi">[</span>
+            <span class="s2">"</span><span class="s">a"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">abbr"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">acronym"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">address"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">b"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">bdo"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">big"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">blockquote"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">br"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">caption"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">center"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">cite"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">code"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">col"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">colgroup"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">dd"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">del"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">dfn"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">dir"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">div"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">dl"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">dt"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">em"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">font"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">h1"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">h2"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">h3"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">h4"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">h5"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">h6"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">hr"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">i"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">ins"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">kbd"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">li"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">menu"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">ol"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">p"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">pre"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">q"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">s"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">samp"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">small"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">span"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">strike"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">strong"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">sub"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">sup"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">table"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">tbody"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">td"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">tfoot"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">th"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">thead"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">tr"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">tt"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">u"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">ul"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">var"</span><span class="pi">,</span>
+          <span class="pi">]</span>
+        <span class="na">attributes</span><span class="pi">:</span>
+          <span class="pi">[</span>
+            <span class="s2">"</span><span class="s">align"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">bgcolor"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">border"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">cellpadding"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">cellspacing"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">cite"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">class"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">clear"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">color"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">colspan"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">dir"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">face"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">frame"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">height"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">href"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">id"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">lang"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">name"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">noshade"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">nowrap"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">rel"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">rev"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">rowspan"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">scope"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">size"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">span"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">start"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">style"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">summary"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">title"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">type"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">valign"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">value"</span><span class="pi">,</span>
+            <span class="s2">"</span><span class="s">width"</span><span class="pi">,</span>
+          <span class="pi">]</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">media</span>
+        <span class="na">tags</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">img"</span><span class="pi">]</span>
+        <span class="na">attributes</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">src"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">alt"</span><span class="pi">]</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">script</span>
+        <span class="na">tags</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">script"</span><span class="pi">]</span>
+        <span class="na">options</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">HTML.Trusted</span>
+            <span class="na">value</span><span class="pi">:</span> <span class="kc">true</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">tidy</span>
+        <span class="na">options</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">key</span><span class="pi">:</span> <span class="s">Output.TidyFormat</span>
+            <span class="na">value</span><span class="pi">:</span> <span class="kc">true</span>
+    <span class="na">fields</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">product_translation.description</span>
+        <span class="na">sets</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">basic"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">media"</span><span class="pi">]</span>
+      <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">app_cms_block.template</span>
+        <span class="na">sets</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">basic"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">media"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">tidy"</span><span class="pi">]</span>
+
+  <span class="na">logger</span><span class="pi">:</span>
+    <span class="na">file_rotation_count</span><span class="pi">:</span> <span class="m">14</span>
+    <span class="na">exclude_exception</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">League\OAuth2\Server\Exception\OAuthServerException</span>
+
+  <span class="na">cache</span><span class="pi">:</span>
+    <span class="na">invalidation</span><span class="pi">:</span>
+      <span class="na">delay</span><span class="pi">:</span> <span class="m">0</span>
+      <span class="na">count</span><span class="pi">:</span> <span class="m">150</span>
+      <span class="na">http_cache</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">logged-in"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">cart-filled"</span><span class="pi">]</span>
+      <span class="na">product_listing_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">product_detail_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">product_review_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">product_search_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">product_suggest_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">product_cross_selling_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">payment_method_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">shipping_method_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">navigation_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">category_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">landing_page_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">language_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">currency_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">country_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">salutation_route</span><span class="pi">:</span> <span class="pi">[]</span>
+      <span class="na">sitemap_route</span><span class="pi">:</span> <span class="pi">[]</span>
+</code></pre></div></div>
+
+  </div>
+
+  
+</article>
+
+<aside class="pagination post-pagination">
+  
+    <a class="prev post-prev" href="/entwickler/2023/10/15/entity-repository-dynamisch-laden.html">
+      <i class="fas fa-chevron-left"></i> <span class="">EntityRepository dynamisch anhand eines Namens laden
+</span>
+    </a>
+  
+  
+  
+    <a class="next post-next" href="/entwickler/2023/10/29/plugins-schneller-builden.html">
+      <span class="">Shopware6 Plug-Ins schneller builden
+</span> <i class="fas fa-chevron-right"></i> 
+    </a>
+  
+</aside>
+
+
+
+        </div>
+      </main>
+
+      <footer class="footer outer">
+  <div class="inner">
+    <div class="columns">
+      <p class="column">
+        &copy; <time datetime="2023-11-28T22:38:45+01:00">2023</time>. All rights reserved.
+      </p>
+  
+      <p class="column">
+        Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> & <a href="https://github.com/vfvong/jekyll-theme-quartz" target="_blank">Quartz</a>
+      </p>
+  
+      
+      <p class="column">
+        Nützliches Wissen, Helfer und Quick-Tipps rund um Shopware6
+      </p>
+      
+
+      
+      <div class="column social">
+        
+          <a href="mailto:hello@jeffblock.de" target="_blank">
+            <i class="fas fa-envelope" title="Email"></i>
+          </a>
+        
+          <a href="https://twitter.com/block_jeff" target="_blank">
+            <i class="fab fa-twitter" title="Twitter"></i>
+          </a>
+        
+          <a href="https://github.com/gainto" target="_blank">
+            <i class="fab fa-github" title="GitHub"></i>
+          </a>
+        
+      </div>
+      
+    </div>      
+  </div>
+</footer>
+
+    </div>
+
+    
+
+    
+  </body>
+</html>

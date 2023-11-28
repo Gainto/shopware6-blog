@@ -1,0 +1,16 @@
+body,
+h1, h2, h3, h4, h5, h6{
+    font-family: 'Sintony', helvetica, arial, sans-serif !important;
+}
+
+.site-header-shield {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+.nav a:hover{
+    color: #FC6F5C;
+}
+
+.post-card a:hover header h2{
+    color: #FC6F5C;
+}

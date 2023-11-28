@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="de">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="/assets/css/normalize.css"/>
+    <link rel="stylesheet" href="/assets/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="/assets/css/open-color.css"/>
+    <link rel="stylesheet" href="/assets/css/quartz.css"/>
+    <link rel="stylesheet" href="/assets/css/custom.css"/>
+
+    <script async src="https://use.fontawesome.com/releases/v6.0.0/js/all.js"></script>
+
+    <link href='http://fonts.googleapis.com/css?family=Tangerine|Sintony:400,700' rel='stylesheet' type='text/css'>
+
+    
+</head>
+
+  <body>
+    <div class="wrapper">
+
+      
+        <header class="site-header outer">
+  <div class="inner">
+    <div class="site-header-small-content">
+      <h4 class="site-title">
+        <a href="/">Shopware6 knowledge base</a>
+      </h4>
+      
+        <nav class="nav">
+          
+            <a class="nav-item " href="/">
+              Home
+            </a>
+          
+            <a class="nav-item " href="/plugins">
+              Plug-Ins
+            </a>
+          
+            <a class="nav-item " href="https://jeffblock.de">
+              About <i class="fa fa-external-link" aria-hidden="true"></i>
+            </a>
+          
+        </nav>
+      
+    </div>
+  </div>
+</header>
+
+      
+
+      <main class="main outer">
+        <div class="inner">
+          <article class="post">
+  <div class="post-meta post-meta-top">
+    <div>
+      <time datetime="2023-11-05T20:37:56+01:00">
+        <i class="fa-solid fa-calendar-days"></i> 05 Nov 2023
+      </time></div>
+    
+    
+      <nav class="post-categories">
+        <i class="fa-solid fa-folder"></i>
+        
+          
+            <span>shopbetreiber</span> /
+          
+        
+      </nav>
+    
+  </div>
+
+  <h1 class="post-title">Shopware6 SEO URL's richtig konfigurieren</h1>
+
+  
+    <figure class="post-cover" style="background-image: url(/assets/images/seo-settings.png)">
+    </figure>
+  
+
+  <div class="post-content">
+    <p>Verständliche SEO-URLs sind essenziell für eine erfolgreiche Suchmaschinenoptimierung.
+In Shopware 6 steht dir standardmäßig eine vorgefertigte Lösung zur Verfügung, um benutzerfreundliche URLs zu erstellen.
+Du kannst genau festlegen, wie die URLs für Produkte oder Kategorien strukturiert werden sollen. Die Anpassung der SEO-URL-Struktur erfolgt unter <code class="language-plaintext highlighter-rouge">Einstellungen &gt; Shop &gt; SEO</code>.
+Hier sind die gängigsten Snippets aufgeführt, die du für die Gestaltung der SEO-URLs nutzen kannst:</p>
+
+<p><strong>Standard:</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">{{ product.translated.name }}/{{ product.productNumber }}</code></p>
+
+<p><strong>Alles klein geschrieben:</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">{{ product.translated.name|lower }}/{{ product.productNumber|lower }}</code></p>
+
+<p><strong>Keine Produktnummer bei Nicht-Varianten:</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">{{ product.translated.name }}{%if product.parentId %}/{{ product.productNumber }}{% endif %}</code></p>
+
+<p><strong>Keine Produktnummer bei Nicht-Varianten und alles klein geschrieben:</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">{{ product.translated.name|lower }}{%if product.parentId %}/{{ product.productNumber|lower }}{% endif %}</code></p>
+
+<p><strong>Wie in SW5:</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">{{ product.translated.name|lower }}{%if product.parentId %}/?number={{ product.productNumber }}{% endif %}</code></p>
+
+<p><strong>Wichtig</strong><br />
+Nach dem Ändern der SEO URL’s einmal den Index aktualisieren:<br />
+<code class="language-plaintext highlighter-rouge">bin/console dal:refresh:index</code></p>
+
+<hr />
+
+<p>Individuelle SEO-URLs können auf der Ebene von Produkten oder Kategorien separat überschrieben werden.
+Sobald eine solche manuelle Überschreibung erfolgt ist, unterliegen sie keiner automatischen Anpassung mehr im Zuge von Strukturänderungen.
+Nach einer manuellen Aktualisierung wird ein Flag in der Datenbank gesetzt.
+Dieses Flag verhindert, dass die manuell festgelegte URL bei späteren Strukturanpassungen überschrieben wird.
+Um die manuelle Überschreibung rückgängig zu machen, kann das Flag <code class="language-plaintext highlighter-rouge">is_modified</code> in der Tabelle <code class="language-plaintext highlighter-rouge">seo_url</code> auf <code class="language-plaintext highlighter-rouge">0</code> zurückgesetzt werden.</p>
+
+  </div>
+
+  
+</article>
+
+<aside class="pagination post-pagination">
+  
+    <a class="prev post-prev" href="/entwickler/2023/10/29/plugins-schneller-builden.html">
+      <i class="fas fa-chevron-left"></i> <span class="">Shopware6 Plug-Ins schneller builden
+</span>
+    </a>
+  
+  
+  
+    <a class="next post-next" href="/entwickler/2023/11/12/schnelles-wechseln-dev-prod.html">
+      <span class="">Schnelles wechseln zwischen DEV und PROD
+</span> <i class="fas fa-chevron-right"></i> 
+    </a>
+  
+</aside>
+
+
+
+        </div>
+      </main>
+
+      <footer class="footer outer">
+  <div class="inner">
+    <div class="columns">
+      <p class="column">
+        &copy; <time datetime="2023-11-28T22:38:45+01:00">2023</time>. All rights reserved.
+      </p>
+  
+      <p class="column">
+        Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> & <a href="https://github.com/vfvong/jekyll-theme-quartz" target="_blank">Quartz</a>
+      </p>
+  
+      
+      <p class="column">
+        Nützliches Wissen, Helfer und Quick-Tipps rund um Shopware6
+      </p>
+      
+
+      
+      <div class="column social">
+        
+          <a href="mailto:hello@jeffblock.de" target="_blank">
+            <i class="fas fa-envelope" title="Email"></i>
+          </a>
+        
+          <a href="https://twitter.com/block_jeff" target="_blank">
+            <i class="fab fa-twitter" title="Twitter"></i>
+          </a>
+        
+          <a href="https://github.com/gainto" target="_blank">
+            <i class="fab fa-github" title="GitHub"></i>
+          </a>
+        
+      </div>
+      
+    </div>      
+  </div>
+</footer>
+
+    </div>
+
+    
+
+    
+  </body>
+</html>
