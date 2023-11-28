@@ -128,4 +128,4 @@ Die Zeilen sorgen dafür, dass nicht alle Produkte aus einer Bestellung in der M
 
 ---
 
-Mehr über das neue Bestands System erfährst du auf der [Offiziellen Shopware Seite](https://developer.shopware.com/docs/guides/hosting/configurations/shopware/stock.html)
+Mehr über das neue Bestands System erfährst du auf der [Offiziellen Shopware Seite](https://developer.shopware.com/docs/guides/hosting/configurations/shopware/stock.html).
