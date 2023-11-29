@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="de">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="/assets/css/normalize.css"/>
+    <link rel="stylesheet" href="/assets/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="/assets/css/open-color.css"/>
+    <link rel="stylesheet" href="/assets/css/quartz.css"/>
+    <link rel="stylesheet" href="/assets/css/custom.css"/>
+
+    <script async src="https://use.fontawesome.com/releases/v6.0.0/js/all.js"></script>
+
+    <link href='http://fonts.googleapis.com/css?family=Tangerine|Sintony:400,700' rel='stylesheet' type='text/css'>
+
+    
+</head>
+
+  <body>
+    <div class="wrapper">
+
+      
+        <header class="site-header outer">
+  <div class="inner">
+    <div class="site-header-small-content">
+      <h4 class="site-title">
+        <a href="/">Shopware6 knowledge base</a>
+      </h4>
+      
+        <nav class="nav">
+          
+            <a class="nav-item " href="/">
+              Home
+            </a>
+          
+            <a class="nav-item " href="/plugins">
+              Plug-Ins
+            </a>
+          
+            <a class="nav-item " href="https://jeffblock.de">
+              About <i class="fa fa-external-link" aria-hidden="true"></i>
+            </a>
+          
+        </nav>
+      
+    </div>
+  </div>
+</header>
+
+      
+
+      <main class="main outer">
+        <div class="inner">
+          <article class="post">
+  <div class="post-meta post-meta-top">
+    <div>
+      <time datetime="2023-12-03T22:00:00+01:00">
+        <i class="fa-solid fa-calendar-days"></i> 03 Dec 2023
+      </time></div>
+    
+    
+      <nav class="post-categories">
+        <i class="fa-solid fa-folder"></i>
+        
+          
+            <span>entwickler</span> /
+          
+        
+          
+            <span>shopbetreiber</span> /
+          
+        
+      </nav>
+    
+  </div>
+
+  <h1 class="post-title">Bye bye all.js - Bessere performance in der Storefront!</h1>
+
+  
+    <figure class="post-cover" style="background-image: url(/assets/images/all_js_rework.png)">
+    </figure>
+  
+
+  <div class="post-content">
+    <p>In der Welt von Shopware stehen Entwickler und Shopbetreiber vor einem  Problem mit JavaScript-Dateien.<br />
+Im Moment (Shopware &lt; 6.6) landet jedes importierte JavaScript, sei es von der Haupt-JS-Datei (main.js) einer App oder eines Plugins, durch den Befehl <code class="language-plaintext highlighter-rouge">composer build:js</code>, letztendlich im allumfassenden all.js des Storefronts.<br />
+Das gilt sogar für JavaScript, das dem Core des Storefronts hinzugefügt wird.</p>
+
+<h2 id="das-problem-ein-steifes-alljs-auf-jeder-seite">Das Problem: Ein steifes all.js auf jeder Seite</h2>
+
+<p>Das all.js-File ist steif und wird auf allen Seiten verwendet, da es fest in das Basis-Twig-Template eingebunden ist.<br />
+Das führt dazu, dass der Shop eine Menge nicht genutzten JavaScript-Code mitliefert.<br />
+Wenn dann noch mehr Apps installiert werden, wird das all.js-File richtig fett.</p>
+
+<h2 id="die-lösung-asynchrones-js-plugin-system-und-dynamische-imports">Die Lösung: Asynchrones JS-Plugin-System und dynamische Imports</h2>
+
+<p>Um das anzugehen, ka der Vorschlag auf, das JS-Plugin-System zu überarbeiten und dynamische Imports zuzulassen.<br />
+Im Moment sind alle JS-Plugins synchron, was bedeutet, dass sie vor der Plugin-Registrierung in die main.js importiert werden und somit zwangsläufig im all.js landen.<br />
+Egal, ob diese Plugins überhaupt auf ener bestimmten Seite des Storefronts verwendet werden.</p>
+
+<p>Die Lösung? Einen optionalen, asynchronen Ansatz in <code class="language-plaintext highlighter-rouge">window.PluginManager.register()</code> einführen.<br />
+Anstelle alle JavaScript-Plugin-Dateien synchron in die main.js zu importieren, wird Shopware ab der Version 6.6 die Möglichkeit bieten, diese dynamisch zu importieren.<br />
+Nach der asynchronen Plugin-Registrierung checkt die Initialisierungsphase automatisch, ob ein registriertes JS-Plugin asynchron ist und lädt es bei Bedarf, wenn der Plugin-Selektor (z.B. [data-cross-selling]) im aktuellen DOM gefunden wird.</p>
+
+<h2 id="schluss-mit-alljs-ein-neuer-weg-für-js-dateien">Schluss mit all.js: Ein neuer Weg für JS-Dateien</h2>
+
+<p>Statt alle JS-Dateien aus dem Ordner <code class="language-plaintext highlighter-rouge">&lt;app-root&gt;/Resources/app/storefront/dist/storefront/js/</code> dynamisch in das all.js zu werfen, sollen sie stattdessen in den Ordner <code class="language-plaintext highlighter-rouge">&lt;platform-root&gt;/public/theme/&lt;theme-hash&gt;/js/</code> verschoben werden.<br />
+Bisher hat Shopware alle JS-Bundles aus dem <code class="language-plaintext highlighter-rouge">/dist</code>-Ordner einer App in die all.js geschmissen.<br />
+Mit dem neuen Ansatz bleiben die JS-Dateien der Apps getrennt und behalten ihre Originalform bei.<br />
+Nur das “Haupt”-JS-Bundle, das den technischen Namen der App trägt, wird in das Template eingefügt.<br />
+Die anderen Bundles können später vom Hauptbundle nach Bedarf abgerufen (gefetched) werden.</p>
+
+<h2 id="vorteile-des-neuen-ansatzes">Vorteile des neuen Ansatzes</h2>
+
+<p>Dieser Ansatz bringt nicht nur eine effizientere Nutzung von JavaScript-Ressourcen mit sich, sondern erlaubt auch dynamische Imports auf Abruf.<br />
+Das ist besonders cool, wenn nur bestimmte JS-Dateien nach Benutzerinteraktionen gebraucht werden.<br />
+Insgesamt versprechen diese neuen Ideen für die JavaScript-Integration in Shopware mehr Flexibilität und Performance für Entwickler sowie eine schlanke Bereitstellung von JavaScript für die Benutzer.</p>
+
+<hr />
+
+<p>Wenn du tiefer in die Thematik eintauchen möchtest, wirf einen Blick auf die <a href="https://github.com/shopware/shopware/discussions/3310">GitHub Diskussion</a>, in der <a href="https://github.com/tobiasberge">@tobiasberge</a> das ganze Thema nochmal kompakt vorstellt und auch auf technischer Ebene drauf eingeht.<br />
+Dieser Post basiert auf den oben verlinkten Beitrag und wurde maßgeblich von diesem inspiriert.<br />
+Die Ankündigung von Shopware, den Vorschlag mit der 6.6 in den Core zu intergieren, findest du <a href="https://www.shopware.com/en/news/shopware-6-6-rc/#66-rc-storefront-changes">hier</a></p>
+
+  </div>
+
+  
+</article>
+
+<aside class="pagination post-pagination">
+  
+    <a class="prev post-prev" href="/entwickler/shopbetreiber/2023/11/28/email-benachrichtigung-bei-bestandsunterschreitung.html">
+      <i class="fas fa-chevron-left"></i> <span class="">E-Mail Benachrichtigung bei Bestandsunterschreitung (OHNE PLUGIN)
+</span>
+    </a>
+  
+  
+  
+    <span class="next post-next unable"><i class="fas fa-chevron-right"></i></span>
+  
+</aside>
+
+
+
+        </div>
+      </main>
+
+      <footer class="footer outer">
+  <div class="inner">
+    <div class="columns">
+      <p class="column">
+        &copy; <time datetime="2023-11-29T16:45:38+01:00">2023</time>. All rights reserved.
+      </p>
+  
+      <p class="column">
+        Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> & <a href="https://github.com/vfvong/jekyll-theme-quartz" target="_blank">Quartz</a>
+      </p>
+  
+      
+      <p class="column">
+        Nützliches Wissen, Helfer und Quick-Tipps rund um Shopware6
+      </p>
+      
+
+      
+      <div class="column social">
+        
+          <a href="mailto:hello@jeffblock.de" target="_blank">
+            <i class="fas fa-envelope" title="Email"></i>
+          </a>
+        
+          <a href="https://twitter.com/block_jeff" target="_blank">
+            <i class="fab fa-twitter" title="Twitter"></i>
+          </a>
+        
+          <a href="https://github.com/gainto" target="_blank">
+            <i class="fab fa-github" title="GitHub"></i>
+          </a>
+        
+      </div>
+      
+    </div>      
+  </div>
+</footer>
+
+    </div>
+
+    
+
+    
+  </body>
+</html>

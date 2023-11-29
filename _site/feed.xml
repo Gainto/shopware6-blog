@@ -1,4 +1,42 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="de"><generator uri="https://jekyllrb.com/" version="4.3.2">Jekyll</generator><link href="https://blog.jeffblock.de/feed.xml" rel="self" type="application/atom+xml" /><link href="https://blog.jeffblock.de/" rel="alternate" type="text/html" hreflang="de" /><updated>2023-11-28T23:55:02+01:00</updated><id>https://blog.jeffblock.de/feed.xml</id><title type="html">Shopware6 knowledge base</title><subtitle>Nützliches Wissen, Helfer und Quick-Tipps rund um Shopware6</subtitle><entry><title type="html">E-Mail Benachrichtigung bei Bestandsunterschreitung (OHNE PLUGIN)</title><link href="https://blog.jeffblock.de/entwickler/shopbetreiber/2023/11/28/email-benachrichtigung-bei-bestandsunterschreitung.html" rel="alternate" type="text/html" title="E-Mail Benachrichtigung bei Bestandsunterschreitung (OHNE PLUGIN)" /><published>2023-11-28T22:00:00+01:00</published><updated>2023-11-28T22:00:00+01:00</updated><id>https://blog.jeffblock.de/entwickler/shopbetreiber/2023/11/28/email-benachrichtigung-bei-bestandsunterschreitung</id><content type="html" xml:base="https://blog.jeffblock.de/entwickler/shopbetreiber/2023/11/28/email-benachrichtigung-bei-bestandsunterschreitung.html"><![CDATA[<p><strong>Ab der Version 6.5.5.0</strong> gibt es ein neues, optionales Bestands Handling, welches es unter anderem (mit einen kleinen Trick) ermöglicht per E-Mail benachrichtigt zu werden, wenn der Bestand eines Produkts einen vordefinierten Schwellenwert unterschreitet.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="de"><generator uri="https://jekyllrb.com/" version="4.3.2">Jekyll</generator><link href="https://blog.jeffblock.de/feed.xml" rel="self" type="application/atom+xml" /><link href="https://blog.jeffblock.de/" rel="alternate" type="text/html" hreflang="de" /><updated>2023-11-29T16:45:38+01:00</updated><id>https://blog.jeffblock.de/feed.xml</id><title type="html">Shopware6 knowledge base</title><subtitle>Nützliches Wissen, Helfer und Quick-Tipps rund um Shopware6</subtitle><entry><title type="html">Bye bye all.js - Bessere performance in der Storefront!</title><link href="https://blog.jeffblock.de/entwickler/shopbetreiber/2023/12/03/bye-bye-all-js.html" rel="alternate" type="text/html" title="Bye bye all.js - Bessere performance in der Storefront!" /><published>2023-12-03T22:00:00+01:00</published><updated>2023-12-03T22:00:00+01:00</updated><id>https://blog.jeffblock.de/entwickler/shopbetreiber/2023/12/03/bye-bye-all-js</id><content type="html" xml:base="https://blog.jeffblock.de/entwickler/shopbetreiber/2023/12/03/bye-bye-all-js.html"><![CDATA[<p>In der Welt von Shopware stehen Entwickler und Shopbetreiber vor einem  Problem mit JavaScript-Dateien.<br />
+Im Moment (Shopware &lt; 6.6) landet jedes importierte JavaScript, sei es von der Haupt-JS-Datei (main.js) einer App oder eines Plugins, durch den Befehl <code class="language-plaintext highlighter-rouge">composer build:js</code>, letztendlich im allumfassenden all.js des Storefronts.<br />
+Das gilt sogar für JavaScript, das dem Core des Storefronts hinzugefügt wird.</p>
+
+<h2 id="das-problem-ein-steifes-alljs-auf-jeder-seite">Das Problem: Ein steifes all.js auf jeder Seite</h2>
+
+<p>Das all.js-File ist steif und wird auf allen Seiten verwendet, da es fest in das Basis-Twig-Template eingebunden ist.<br />
+Das führt dazu, dass der Shop eine Menge nicht genutzten JavaScript-Code mitliefert.<br />
+Wenn dann noch mehr Apps installiert werden, wird das all.js-File richtig fett.</p>
+
+<h2 id="die-lösung-asynchrones-js-plugin-system-und-dynamische-imports">Die Lösung: Asynchrones JS-Plugin-System und dynamische Imports</h2>
+
+<p>Um das anzugehen, ka der Vorschlag auf, das JS-Plugin-System zu überarbeiten und dynamische Imports zuzulassen.<br />
+Im Moment sind alle JS-Plugins synchron, was bedeutet, dass sie vor der Plugin-Registrierung in die main.js importiert werden und somit zwangsläufig im all.js landen.<br />
+Egal, ob diese Plugins überhaupt auf ener bestimmten Seite des Storefronts verwendet werden.</p>
+
+<p>Die Lösung? Einen optionalen, asynchronen Ansatz in <code class="language-plaintext highlighter-rouge">window.PluginManager.register()</code> einführen.<br />
+Anstelle alle JavaScript-Plugin-Dateien synchron in die main.js zu importieren, wird Shopware ab der Version 6.6 die Möglichkeit bieten, diese dynamisch zu importieren.<br />
+Nach der asynchronen Plugin-Registrierung checkt die Initialisierungsphase automatisch, ob ein registriertes JS-Plugin asynchron ist und lädt es bei Bedarf, wenn der Plugin-Selektor (z.B. [data-cross-selling]) im aktuellen DOM gefunden wird.</p>
+
+<h2 id="schluss-mit-alljs-ein-neuer-weg-für-js-dateien">Schluss mit all.js: Ein neuer Weg für JS-Dateien</h2>
+
+<p>Statt alle JS-Dateien aus dem Ordner <code class="language-plaintext highlighter-rouge">&lt;app-root&gt;/Resources/app/storefront/dist/storefront/js/</code> dynamisch in das all.js zu werfen, sollen sie stattdessen in den Ordner <code class="language-plaintext highlighter-rouge">&lt;platform-root&gt;/public/theme/&lt;theme-hash&gt;/js/</code> verschoben werden.<br />
+Bisher hat Shopware alle JS-Bundles aus dem <code class="language-plaintext highlighter-rouge">/dist</code>-Ordner einer App in die all.js geschmissen.<br />
+Mit dem neuen Ansatz bleiben die JS-Dateien der Apps getrennt und behalten ihre Originalform bei.<br />
+Nur das “Haupt”-JS-Bundle, das den technischen Namen der App trägt, wird in das Template eingefügt.<br />
+Die anderen Bundles können später vom Hauptbundle nach Bedarf abgerufen (gefetched) werden.</p>
+
+<h2 id="vorteile-des-neuen-ansatzes">Vorteile des neuen Ansatzes</h2>
+
+<p>Dieser Ansatz bringt nicht nur eine effizientere Nutzung von JavaScript-Ressourcen mit sich, sondern erlaubt auch dynamische Imports auf Abruf.<br />
+Das ist besonders cool, wenn nur bestimmte JS-Dateien nach Benutzerinteraktionen gebraucht werden.<br />
+Insgesamt versprechen diese neuen Ideen für die JavaScript-Integration in Shopware mehr Flexibilität und Performance für Entwickler sowie eine schlanke Bereitstellung von JavaScript für die Benutzer.</p>
+
+<hr />
+
+<p>Wenn du tiefer in die Thematik eintauchen möchtest, wirf einen Blick auf die <a href="https://github.com/shopware/shopware/discussions/3310">GitHub Diskussion</a>, in der <a href="https://github.com/tobiasberge">@tobiasberge</a> das ganze Thema nochmal kompakt vorstellt und auch auf technischer Ebene drauf eingeht.<br />
+Dieser Post basiert auf den oben verlinkten Beitrag und wurde maßgeblich von diesem inspiriert.<br />
+Die Ankündigung von Shopware, den Vorschlag mit der 6.6 in den Core zu intergieren, findest du <a href="https://www.shopware.com/en/news/shopware-6-6-rc/#66-rc-storefront-changes">hier</a></p>]]></content><author><name></name></author><category term="entwickler" /><category term="shopbetreiber" /><summary type="html"><![CDATA[In der Welt von Shopware stehen Entwickler und Shopbetreiber vor einem Problem mit JavaScript-Dateien. Im Moment (Shopware &lt; 6.6) landet jedes importierte JavaScript, sei es von der Haupt-JS-Datei (main.js) einer App oder eines Plugins, durch den Befehl composer build:js, letztendlich im allumfassenden all.js des Storefronts. Das gilt sogar für JavaScript, das dem Core des Storefronts hinzugefügt wird.]]></summary></entry><entry><title type="html">E-Mail Benachrichtigung bei Bestandsunterschreitung (OHNE PLUGIN)</title><link href="https://blog.jeffblock.de/entwickler/shopbetreiber/2023/11/28/email-benachrichtigung-bei-bestandsunterschreitung.html" rel="alternate" type="text/html" title="E-Mail Benachrichtigung bei Bestandsunterschreitung (OHNE PLUGIN)" /><published>2023-11-28T22:00:00+01:00</published><updated>2023-11-28T22:00:00+01:00</updated><id>https://blog.jeffblock.de/entwickler/shopbetreiber/2023/11/28/email-benachrichtigung-bei-bestandsunterschreitung</id><content type="html" xml:base="https://blog.jeffblock.de/entwickler/shopbetreiber/2023/11/28/email-benachrichtigung-bei-bestandsunterschreitung.html"><![CDATA[<p><strong>Ab der Version 6.5.5.0</strong> gibt es ein neues, optionales Bestands Handling, welches es unter anderem (mit einen kleinen Trick) ermöglicht per E-Mail benachrichtigt zu werden, wenn der Bestand eines Produkts einen vordefinierten Schwellenwert unterschreitet.</p>
 
 <p>Das Besondere dabei: Diese Funktion lässt sich ohne den Einsatz kostenpflichtiger Drittanbieter-Plug-Ins realisieren.</p>
 
@@ -633,15 +671,4 @@ Die <code class="language-plaintext highlighter-rouge">ProductEntity</code> kann
 
 <p>Der Grund, wieso ein verschachteltes Array übergeben muss, ist recht simpel:
 Es können mehrere Entities auf einmal übergeben/bearbeitet werden.
-Wenn kein verschachteltes Array erwartet werden würde, müsste für jede Entity ein eigenständiger Aufruf gemacht werden.</p>]]></content><author><name></name></author><category term="entwickler" /><summary type="html"><![CDATA[Dieser Fehler tritt häufig auf, wenn Daten über ein repository gespeichert werden sollen. Wenn die upsert, update oder create Methode des repositories verwendet wird, wird ein verschachteltes Array erwartet.]]></summary></entry><entry><title type="html">Wartungsmodus mit Passwortschutz</title><link href="https://blog.jeffblock.de/shopbetreiber/2023/10/01/wartungsmodus-mit-passwortschutz.html" rel="alternate" type="text/html" title="Wartungsmodus mit Passwortschutz" /><published>2023-10-01T21:37:00+02:00</published><updated>2023-10-01T21:37:00+02:00</updated><id>https://blog.jeffblock.de/shopbetreiber/2023/10/01/wartungsmodus-mit-passwortschutz</id><content type="html" xml:base="https://blog.jeffblock.de/shopbetreiber/2023/10/01/wartungsmodus-mit-passwortschutz.html"><![CDATA[<p>Kennst du das? Du möchtest nur kurz etwas im DEV Shop oder auf der Staging umgebung überprüfen und wirst freundlich von der <strong>Wartungsmodus</strong> Seite begrüßt.
-Jetzt darfst du dich erstmal im Admin anmelden, den Sales-Channel auswählen und deine IP Whitelisten, bevor du den Shop sehen kannst.
-Das selbe passiert dir auch Morgen und übermororgen.</p>
-
-<p>Ziemlich nervig. Wäre es nicht cool, die <strong>Wartungsmodusseite mit einem Passwort zu versehen</strong>, sodass bei korrekter Eingabe deine IP <strong>automatisch</strong> zur Whitelist hinzugefügt wird?
-Kein einloggen ins Admin, kein manuelles whitelisten - Passwort eingeben und fertig!</p>
-
-<p>Genau das macht das Plug-In, welches Gratis und open-source auf GitHub für Shopware 6.5 zur Verfügung steht.
-Einfach die .zip runterladen, installieren, Passwort in der Konfiguration festlegen und fertig…</p>
-
-<p>Klingt gut? Hier gehts zum Plug-In:
-<a href="https://github.com/Gainto/JblMaintenanceLogin">Gainto/JblMaintenanceLogin</a></p>]]></content><author><name></name></author><category term="shopbetreiber" /><summary type="html"><![CDATA[Kennst du das? Du möchtest nur kurz etwas im DEV Shop oder auf der Staging umgebung überprüfen und wirst freundlich von der Wartungsmodus Seite begrüßt. Jetzt darfst du dich erstmal im Admin anmelden, den Sales-Channel auswählen und deine IP Whitelisten, bevor du den Shop sehen kannst. Das selbe passiert dir auch Morgen und übermororgen.]]></summary></entry></feed>
+Wenn kein verschachteltes Array erwartet werden würde, müsste für jede Entity ein eigenständiger Aufruf gemacht werden.</p>]]></content><author><name></name></author><category term="entwickler" /><summary type="html"><![CDATA[Dieser Fehler tritt häufig auf, wenn Daten über ein repository gespeichert werden sollen. Wenn die upsert, update oder create Methode des repositories verwendet wird, wird ein verschachteltes Array erwartet.]]></summary></entry></feed>
