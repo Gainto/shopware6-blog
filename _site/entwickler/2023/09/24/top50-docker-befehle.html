@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="de">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="/assets/css/normalize.css"/>
+    <link rel="stylesheet" href="/assets/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="/assets/css/open-color.css"/>
+    <link rel="stylesheet" href="/assets/css/quartz.css"/>
+    <link rel="stylesheet" href="/assets/css/custom.css"/>
+
+    <script async src="https://use.fontawesome.com/releases/v6.0.0/js/all.js"></script>
+
+    <link href='http://fonts.googleapis.com/css?family=Tangerine|Sintony:400,700' rel='stylesheet' type='text/css'>
+
+    
+</head>
+
+  <body>
+    <div class="wrapper">
+
+      
+        <header class="site-header outer">
+  <div class="inner">
+    <div class="site-header-small-content">
+      <h4 class="site-title">
+        <a href="/">Shopware6 knowledge base</a>
+      </h4>
+      
+        <nav class="nav">
+          
+            <a class="nav-item " href="/">
+              Home
+            </a>
+          
+            <a class="nav-item " href="/plugins">
+              Plug-Ins
+            </a>
+          
+            <a class="nav-item " href="https://jeffblock.de">
+              About <i class="fa fa-external-link" aria-hidden="true"></i>
+            </a>
+          
+        </nav>
+      
+    </div>
+  </div>
+</header>
+
+      
+
+      <main class="main outer">
+        <div class="inner">
+          <article class="post">
+  <div class="post-meta post-meta-top">
+    <div>
+      <time datetime="2023-09-24T21:37:00+02:00">
+        <i class="fa-solid fa-calendar-days"></i> 24 Sep 2023
+      </time></div>
+    
+    
+      <nav class="post-categories">
+        <i class="fa-solid fa-folder"></i>
+        
+          
+            <span>entwickler</span> /
+          
+        
+      </nav>
+    
+  </div>
+
+  <h1 class="post-title">TOP50 Docker Befehle die du als Entwickler kennen musst</h1>
+
+  
+    <figure class="post-cover" style="background-image: url(/assets/images/blog.png)">
+    </figure>
+  
+
+  <div class="post-content">
+    <p>Docker ist eine Plattform, die es Entwicklern ermöglicht, Anwendungen und ihre Abhängigkeiten in leichtgewichtigen, isolierten Containern zu verpacken, um eine konsistente Ausführung über verschiedene Umgebungen hinweg zu gewährleisten.<br />
+Diese Container können schnell bereitgestellt, skaliert und mit minimalen Ressourcen betrieben werden.<br />
+Docker hat den Markt wie im Sturm erobert und immer mehr Prozesse und Unternehmen bauen auf Container Lösungen.</p>
+
+<p>Ich laufe immer in das Problem, dass mir gewisse Befehle, wenn ich sie brauche, einfach nicht einfallen.<br />
+Daher habe ich eine Top50 Liste, der (für mich) wichtigsten Befehle zusammengestellt.<br />
+Ich nutze diese Liste schon seid einiger Zeit als eine art quick-reference.</p>
+
+<p>Bevor wir mit den Befehlen starten, ist es wichtig, den Unterschied zwischen Docker Images und Docker Containern zu verstehen.<br />
+Ein Docker Image setzt sich aus einer Docker Datei und allen notwendigen Abhängigkeiten zusammen.<br />
+Ein Docker Container ist im Wesentlichen eine gestartete Instanz eines Docker Images.<br />
+Es ist jedoch möglich, dass mehrere Container auf der Grundlage desselben Images ausgeführt werden.</p>
+
+<p><strong>Here we go:</strong></p>
+
+<p><code class="language-plaintext highlighter-rouge">docker run</code> Startet einen Container aus einem Image.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run <span class="o">[</span>OPTIONS] IMAGE <span class="o">[</span>COMMAND] <span class="o">[</span>ARG...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker ps</code> Zeigt Informationen zu laufenden Containern an.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker ps <span class="o">[</span>OPTIONS]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker images</code> Zeigt die Liste der verfügbaren Images an.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker images <span class="o">[</span>OPTIONS] <span class="o">[</span>REPOSITORY[:TAG]]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker build</code> Erstellt ein Docker-Image aus einem Dockerfile.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker build <span class="o">[</span>OPTIONS] PATH | URL | -
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker stop</code> Stoppt einen laufenden Container.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker stop <span class="o">[</span>OPTIONS] CONTAINER <span class="o">[</span>CONTAINER...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker start</code> Startet einen gestoppten Container.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker start <span class="o">[</span>OPTIONS] CONTAINER <span class="o">[</span>CONTAINER...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker restart</code> Startet einen gestoppten Container neu.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker restart <span class="o">[</span>OPTIONS] CONTAINER <span class="o">[</span>CONTAINER...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker exec</code> Führt einen Befehl in einem laufenden Container aus.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker <span class="nb">exec</span> <span class="o">[</span>OPTIONS] CONTAINER COMMAND <span class="o">[</span>ARG...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker rm</code> Löscht einen oder mehrere Container.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker <span class="nb">rm</span> <span class="o">[</span>OPTIONS] CONTAINER <span class="o">[</span>CONTAINER...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker rmi</code> Löscht ein oder mehrere Images.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker rmi <span class="o">[</span>OPTIONS] IMAGE <span class="o">[</span>IMAGE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker network</code> Verwaltet Docker-Netzwerke.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker network <span class="o">[</span>OPTIONS] COMMAND
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker volume</code> Verwaltet Docker-Volumes.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker volume <span class="o">[</span>OPTIONS] COMMAND
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker logs</code> Zeigt die Logs eines Containers an.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker logs <span class="o">[</span>OPTIONS] CONTAINER
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker inspect</code> Gibt ausführliche Informationen zu Ressourcen aus.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker inspect <span class="o">[</span>OPTIONS] NAME|ID <span class="o">[</span>NAME|ID...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker buildx</code> Erweiterte Funktionen für den Build-Prozess.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker buildx <span class="o">[</span>OPTIONS] COMMAND
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker info</code> Zeigt Systeminformationen an.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker info <span class="o">[</span>OPTIONS]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker login</code> Authentifiziert einen Benutzer mit einem Docker-Registry.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker login <span class="o">[</span>OPTIONS] <span class="o">[</span>SERVER]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker version</code> Zeigt die Docker-Versionen für Client und Server an.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker version <span class="o">[</span>OPTIONS]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker save</code> Speichert ein Image als tar-Archiv.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker save <span class="o">[</span>OPTIONS] IMAGE <span class="o">[</span>IMAGE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker load</code> Lädt ein gespeichertes Image aus einem tar-Archiv.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker load <span class="o">[</span>OPTIONS]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker cp</code> Kopiert Dateien/Folder zwischen dem Dateisystem des Hosts und des Containers.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker <span class="nb">cp</span> <span class="o">[</span>OPTIONS] CONTAINER:SRC_PATH DEST_PATH|-
+docker <span class="nb">cp</span> <span class="o">[</span>OPTIONS] SRC_PATH|- CONTAINER:DEST_PATH
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker rename</code> Benennt einen Container um.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker rename <span class="o">[</span>OPTIONS] CONTAINER NEW_NAME
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker pause</code> Pausiert einen laufenden Container-Prozess.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker pause CONTAINER <span class="o">[</span>CONTAINER...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker unpause</code> Setzt die Ausführung eines pausierten Containers fort.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker unpause CONTAINER <span class="o">[</span>CONTAINER...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker top</code> Zeigt die laufenden Prozesse in einem Container an.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker top CONTAINER <span class="o">[</span>ps OPTIONS]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker events</code> Zeigt Docker-Ereignisse in Echtzeit an.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker events <span class="o">[</span>OPTIONS]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker stats</code> Zeigt Live-Statistiken für Ressourcenverbrauch von Containern an.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker stats <span class="o">[</span>OPTIONS] <span class="o">[</span>CONTAINER...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker system prune</code> Entfernt nicht mehr benötigte Daten wie gestoppte Container und unbenutzte Images.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker system prune <span class="o">[</span>OPTIONS]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose</code> Verwaltet Docker-Anwendungen mit mehreren Containern.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose <span class="o">[</span>OPTIONS] COMMAND <span class="o">[</span>ARGS...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose up</code> Startet Dienste gemäß der docker-compose.yml-Konfiguration.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose up <span class="o">[</span>OPTIONS] <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose down</code> Stoppt und entfernt Dienste gemäß der docker-compose.yml-Konfiguration.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose down <span class="o">[</span>OPTIONS]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose ps</code> Zeigt den Status der Dienste in der docker-compose.yml-Konfiguration an.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose ps <span class="o">[</span>OPTIONS] <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose logs</code> Zeigt die Logs der Dienste in der docker-compose.yml-Konfiguration an.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose logs <span class="o">[</span>OPTIONS] <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose exec</code> Führt Befehle in Diensten der docker-compose.yml-Konfiguration aus.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose <span class="nb">exec</span> <span class="o">[</span>OPTIONS] SERVICE COMMAND <span class="o">[</span>ARGS...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose build</code> Baut Dienste gemäß der docker-compose.yml-Konfiguration neu.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose build <span class="o">[</span>OPTIONS] <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose pull</code> Lädt Docker-Images für die Dienste in der docker-compose.yml-Konfiguration herunter.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose pull <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose up -d</code> Startet Dienste im Hintergrund (detach mode) gemäß der docker-compose.yml-Konfiguration.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose up <span class="nt">-d</span> <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose logs -f</code> Zeigt die Echtzeit-Logs der Dienste in der docker-compose.yml-Konfiguration an.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose logs <span class="nt">-f</span> <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose stop</code> Stoppt Dienste gemäß der docker-compose.yml-Konfiguration.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose stop <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose start</code> Startet zuvor gestoppte Dienste gemäß der docker-compose.yml-Konfiguration.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose start <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose restart</code> Startet Dienste in der docker-compose.yml-Konfiguration neu.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose restart <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose pause</code> Pausiert Dienste in der docker-compose.yml-Konfiguration.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose pause <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose unpause</code> Setzt die Ausführung pausierter Dienste in der docker-compose.yml-Konfiguration fort.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose unpause <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose down -v</code> Stoppt und entfernt Dienste und zugehörige Volumes gemäß der docker-compose.yml-Konfiguration.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose down <span class="nt">-v</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose ps -q</code> Zeigt die IDs der Container der Dienste in der docker-compose.yml-Konfiguration an.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose ps <span class="nt">-q</span> <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose logs -t</code> Zeigt die Zeitstempel in den Logs der Dienste in der docker-compose.yml-Konfiguration an.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose logs <span class="nt">-t</span> <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose scale</code> Ändert die Anzahl der Container für einen Dienst in der docker-compose.yml-Konfiguration.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose scale <span class="nv">SERVICE</span><span class="o">=</span>NUM <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose config</code> Überprüft und zeigt die Zusammenführung von docker-compose.yml-Dateien an.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose config <span class="o">[</span>OPTIONS]
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">docker-compose events</code> Zeigt Echtzeitereignisse von Diensten in der docker-compose.yml-Konfiguration an.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker-compose events <span class="o">[</span>SERVICE...]
+</code></pre></div></div>
+
+  </div>
+
+  
+</article>
+
+<aside class="pagination post-pagination">
+  
+    <a class="prev post-prev" href="/entwickler/2022/11/20/twig-debug-mode-aktivieren.html">
+      <i class="fas fa-chevron-left"></i> <span class="">Twig Debug Mode aktivieren (dump())
+</span>
+    </a>
+  
+  
+  
+    <a class="next post-next" href="/shopbetreiber/2023/10/01/wartungsmodus-mit-passwortschutz.html">
+      <span class="">Wartungsmodus mit Passwortschutz
+</span> <i class="fas fa-chevron-right"></i> 
+    </a>
+  
+</aside>
+
+
+
+        </div>
+      </main>
+
+      <footer class="footer outer">
+  <div class="inner">
+    <div class="columns">
+      <p class="column">
+        &copy; <time datetime="2023-12-01T13:50:36+01:00">2023</time>. All rights reserved.
+      </p>
+  
+      <p class="column">
+        Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> & <a href="https://github.com/vfvong/jekyll-theme-quartz" target="_blank">Quartz</a>
+      </p>
+  
+      
+      <p class="column">
+        Nützliches Wissen, Helfer und Quick-Tipps rund um Shopware6
+      </p>
+      
+
+      
+      <div class="column social">
+        
+          <a href="mailto:hello@jeffblock.de" target="_blank">
+            <i class="fas fa-envelope" title="Email"></i>
+          </a>
+        
+          <a href="https://twitter.com/block_jeff" target="_blank">
+            <i class="fab fa-twitter" title="Twitter"></i>
+          </a>
+        
+          <a href="https://github.com/gainto" target="_blank">
+            <i class="fab fa-github" title="GitHub"></i>
+          </a>
+        
+      </div>
+      
+    </div>      
+  </div>
+</footer>
+
+    </div>
+
+    
+
+    
+  </body>
+</html>
