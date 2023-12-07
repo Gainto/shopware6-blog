@@ -84,6 +84,8 @@ monolog:
 
 ```
 
+(Falls du dich fragst, was die ganzen Eigenschaften machen, wirf mal einen Blick in die Ausführliche [Symfony Dokumenation](https://symfony.com/doc/current/logging.html))
+
 __Beachte:__ In der Theorie sollten nun auch im Prod-Modus die DEV-Ausgaben protokolliert werden.  
 Es kann jedoch sein, dass bestimmte Erweiterungen und Apps `%kernel.debug%` nutzen und auf dieser Basis protokollieren.  
 In diesem Fall würde im Prod-Modus nicht protokolliert, weil `%kernel.debug% = false` ist.  
