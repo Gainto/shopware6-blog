@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="de">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="/assets/css/normalize.css"/>
+    <link rel="stylesheet" href="/assets/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="/assets/css/open-color.css"/>
+    <link rel="stylesheet" href="/assets/css/quartz.css"/>
+    <link rel="stylesheet" href="/assets/css/custom.css"/>
+
+    <script async src="https://use.fontawesome.com/releases/v6.0.0/js/all.js"></script>
+
+    <link href='http://fonts.googleapis.com/css?family=Tangerine|Sintony:400,700' rel='stylesheet' type='text/css'>
+
+    
+</head>
+
+  <body>
+    <div class="wrapper">
+
+      
+        <header class="site-header outer">
+  <div class="inner">
+    <div class="site-header-small-content">
+      <h4 class="site-title">
+        <a href="/">Shopware6 knowledge base</a>
+      </h4>
+      
+        <nav class="nav">
+          
+            <a class="nav-item " href="/">
+              Home
+            </a>
+          
+            <a class="nav-item " href="/plugins">
+              Plug-Ins
+            </a>
+          
+            <a class="nav-item " href="https://jeffblock.de">
+              About <i class="fa fa-external-link" aria-hidden="true"></i>
+            </a>
+          
+        </nav>
+      
+    </div>
+  </div>
+</header>
+
+      
+
+      <main class="main outer">
+        <div class="inner">
+          <article class="post">
+  <div class="post-meta post-meta-top">
+    <div>
+      <time datetime="2023-12-10T22:00:00+01:00">
+        <i class="fa-solid fa-calendar-days"></i> 10 Dec 2023
+      </time></div>
+    
+    
+      <nav class="post-categories">
+        <i class="fa-solid fa-folder"></i>
+        
+          
+            <span>entwickler</span> /
+          
+        
+          
+            <span>shopbetreiber</span> /
+          
+        
+      </nav>
+    
+  </div>
+
+  <h1 class="post-title">DEV Logging trotz PROD Modus</h1>
+
+  
+    <figure class="post-cover" style="background-image: url(/assets/images/monolog_yaml.png)">
+    </figure>
+  
+
+  <div class="post-content">
+    <p>Als Entwickler stößt man manchmal auf die Herausforderung, Fehler im Live-System zu debuggen, insbesondere wenn sich der Fehler auf magische Weise in der Staging- oder Dev-Umgebung nicht reproduzieren lässt. Die naheliegendste Lösung besteht darin, den Modus in der .env einfach auf DEV zu setzen, den Fehler kurz zu debuggen und dann den Modus zurück auf prod zu stellen.</p>
+
+<p><strong>Diese Vorgehensweise birgt jedoch einige Herausforderungen und ein besonders großes Problem:</strong></p>
+
+<p><strong>Performanceeinbußen:</strong><br />
+Die Performance sinkt erheblich.</p>
+
+<p><strong>Cache-Reduzierung:</strong><br />
+Der Cache wird reduziert und kann sogar vollständig deaktiviert werden.</p>
+
+<p><strong>Verhalten des Shops:</strong><br />
+Je nach Konfiguration kann sich das Shopverhalten ändern. Im schlimmsten Fall funktioniert der Checkout nicht mehr.</p>
+
+<p><strong>Leak sensibler Informationen:</strong><br />
+Möglicherweise werden sensible Informationen preisgegeben.<br />
+Der Symfony Profiler könnte aktiviert werden, was dazu führt, dass Umgebungsvariablen, einschließlich Datenbankzugangsdaten, frei einsehbar sind.<br />
+In einem Live-Shop mit vielen Kundendaten wäre das eine absolute Katastrophe.</p>
+
+<p>Es gilt also, in einer laufenden Live-Umgebung zu vermeiden, den Dev-Modus zu aktivieren.</p>
+
+<p>Aber wie lässt sich das Logging trotzdem so anpassen, dass es sich wie im DEV-Modus verhält?</p>
+
+<h2 id="der-shopware-logger">Der Shopware Logger:</h2>
+<p>Abhängig von der Umgebung in der <code class="language-plaintext highlighter-rouge">.env</code> erstellt Shopware eine prod-datum.log und/oder eine dev.log im <code class="language-plaintext highlighter-rouge">&lt;shop&gt;/var/log</code> Ordner.<br />
+Shopware protokolliert in diesen Dateien mit Monolog. Der Standard-Shopware-Logger wird im DI (Dependency Injection) wie folgt in Services injected:
+<code class="language-plaintext highlighter-rouge">&lt;argument type="service" id="logger"/&gt;</code></p>
+
+<p>Während im Produktivmodus nur Fehler protokolliert werden, werden im Dev Modus auch Infos, Notices und Debug-Meldungen protokolliert.</p>
+
+<p><strong>.env=dev loggt:</strong></p>
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$this</span><span class="o">-&gt;</span><span class="n">logger</span><span class="o">-&gt;</span><span class="nf">error</span><span class="p">(</span><span class="s2">"ERROR"</span><span class="p">);</span>
+<span class="nv">$this</span><span class="o">-&gt;</span><span class="n">logger</span><span class="o">-&gt;</span><span class="nf">warning</span><span class="p">(</span><span class="s2">"WARNING"</span><span class="p">);</span>
+<span class="nv">$this</span><span class="o">-&gt;</span><span class="n">logger</span><span class="o">-&gt;</span><span class="nf">alert</span><span class="p">(</span><span class="s2">"ALERT"</span><span class="p">);</span>
+<span class="nv">$this</span><span class="o">-&gt;</span><span class="n">logger</span><span class="o">-&gt;</span><span class="nf">debug</span><span class="p">(</span><span class="s2">"DEBUG"</span><span class="p">);</span>
+<span class="nv">$this</span><span class="o">-&gt;</span><span class="n">logger</span><span class="o">-&gt;</span><span class="nf">critical</span><span class="p">(</span><span class="s2">"CRITICAL"</span><span class="p">);</span>
+<span class="nv">$this</span><span class="o">-&gt;</span><span class="n">logger</span><span class="o">-&gt;</span><span class="nf">info</span><span class="p">(</span><span class="s2">"INFO"</span><span class="p">);</span>
+<span class="nv">$this</span><span class="o">-&gt;</span><span class="n">logger</span><span class="o">-&gt;</span><span class="nf">notice</span><span class="p">(</span><span class="s2">"NOTICE"</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p><strong>.env=prod loggt:</strong></p>
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$this</span><span class="o">-&gt;</span><span class="n">logger</span><span class="o">-&gt;</span><span class="nf">error</span><span class="p">(</span><span class="s2">"ERROR"</span><span class="p">);</span>
+<span class="nv">$this</span><span class="o">-&gt;</span><span class="n">logger</span><span class="o">-&gt;</span><span class="nf">alert</span><span class="p">(</span><span class="s2">"ALERT"</span><span class="p">);</span>
+<span class="nv">$this</span><span class="o">-&gt;</span><span class="n">logger</span><span class="o">-&gt;</span><span class="nf">critical</span><span class="p">(</span><span class="s2">"CRITICAL"</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h2 id="dev-logging-im-prod-modus-aktivieren">DEV-Logging im Prod-Modus aktivieren:</h2>
+<p>Um auch in der PROD-Umgebung das gleiche wie in DEV zu protokollieren, muss das Log-Level für die PROD-Umgebung angepasst werden.<br />
+Das geschieht in der <code class="language-plaintext highlighter-rouge">monolog.yaml</code>.</p>
+
+<p>Finde die <code class="language-plaintext highlighter-rouge">monolog.yaml</code> im <code class="language-plaintext highlighter-rouge">&lt;root&gt;/config/packages/prod</code> Ordner und ändere das Level von <code class="language-plaintext highlighter-rouge">error</code> im <code class="language-plaintext highlighter-rouge">nested</code> Handler und das <code class="language-plaintext highlighter-rouge">action_level</code> auf <code class="language-plaintext highlighter-rouge">debug</code>:</p>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">&lt;root&gt;/config/packages/prod/monolog.yaml</span>
+
+<span class="na">monolog</span><span class="pi">:</span>
+    <span class="na">handlers</span><span class="pi">:</span>
+        <span class="na">main</span><span class="pi">:</span>
+            <span class="na">type</span><span class="pi">:</span> <span class="s">fingers_crossed</span>
+            <span class="na">action_level</span><span class="pi">:</span> <span class="s">debug</span> <span class="c1"># hier !!!</span>
+            <span class="na">handler</span><span class="pi">:</span> <span class="s">nested</span>
+            <span class="na">excluded_http_codes</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">404</span><span class="pi">,</span> <span class="nv">405</span><span class="pi">]</span>
+            <span class="na">buffer_size</span><span class="pi">:</span> <span class="m">30</span>
+        <span class="na">business_event_handler_buffer</span><span class="pi">:</span>
+            <span class="na">level</span><span class="pi">:</span> <span class="s">error</span>
+        <span class="na">nested</span><span class="pi">:</span>
+            <span class="na">type</span><span class="pi">:</span> <span class="s">rotating_file</span>
+            <span class="na">path</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%kernel.logs_dir%/%kernel.environment%.log"</span>
+            <span class="na">level</span><span class="pi">:</span> <span class="s">debug</span> <span class="c1"># hier !!!</span>
+        <span class="na">console</span><span class="pi">:</span>
+            <span class="na">type</span><span class="pi">:</span> <span class="s">console</span>
+            <span class="na">process_psr_3_messages</span><span class="pi">:</span> <span class="kc">false</span>
+            <span class="na">channels</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">!event"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">!doctrine"</span><span class="pi">]</span>
+
+</code></pre></div></div>
+
+<p><strong>Beachte:</strong> In der Theorie sollten nun auch im Prod-Modus die DEV-Ausgaben protokolliert werden.<br />
+Es kann jedoch sein, dass bestimmte Erweiterungen und Apps <code class="language-plaintext highlighter-rouge">%kernel.debug%</code> nutzen und auf dieser Basis protokollieren.<br />
+In diesem Fall würde im Prod-Modus nicht protokolliert, weil <code class="language-plaintext highlighter-rouge">%kernel.debug% = false</code> ist.</p>
+
+<h2 id="in-eigene-log-datei-loggen">In eigene Log Datei loggen</h2>
+<p>Neben den oben genannten Standard-Loggern ist es oft wünschenswert, eine eigene Log-Datei zu nutzen.<br />
+In einem Symfony-Bundle könnten wir einfach die Symfony Monolog-Integration verwenden, um einen Logger zu erstellen.<br />
+Allerdings hat Shopware eine eigene <code class="language-plaintext highlighter-rouge">LoggerFactory</code>, die als eine Art Wrapper fungiert.<br />
+Mit dieser Factory können benutzerdefinierte Logger bequem erstellt werden.</p>
+
+<p>Erstelle dazu einfach einen neuen Logger-Service in der <code class="language-plaintext highlighter-rouge">src/Resources/config/services.xml</code> und nutze die <code class="language-plaintext highlighter-rouge">LoggerFactory</code>, um einen Logger zu erstellen:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>src/Resources/config/services.xml
+
+<span class="nt">&lt;service</span> <span class="na">id=</span><span class="s">"my.custom.logger"</span> <span class="na">class=</span><span class="s">"Monolog\Logger"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;factory</span> <span class="na">service=</span><span class="s">"Shopware\Core\Framework\Log\LoggerFactory"</span> <span class="na">method=</span><span class="s">"createRotating"</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;argument</span> <span class="na">type=</span><span class="s">"string"</span><span class="nt">&gt;</span>my-custom-logger<span class="nt">&lt;/argument&gt;</span>
+<span class="nt">&lt;/service&gt;</span>
+</code></pre></div></div>
+
+<ul>
+  <li>Über den Tag <code class="language-plaintext highlighter-rouge">id="my.custom.logger</code> kannst du diesen Logger in deine Services injecten (<code class="language-plaintext highlighter-rouge">&lt;argument type='service' id='my.custom.logger'/&gt;</code>)</li>
+  <li><code class="language-plaintext highlighter-rouge">method="createRotating"</code> bedeutet, dass jeden Tag eine neue Log-Datei erstellt wird.</li>
+</ul>
+
+  </div>
+
+  
+</article>
+
+<aside class="pagination post-pagination">
+  
+    <a class="prev post-prev" href="/entwickler/shopbetreiber/2023/12/03/bye-bye-all-js.html">
+      <i class="fas fa-chevron-left"></i> <span class="">Bye bye all.js - Bessere performance in der Storefront!
+</span>
+    </a>
+  
+  
+  
+    <span class="next post-next unable"><i class="fas fa-chevron-right"></i></span>
+  
+</aside>
+
+
+
+        </div>
+      </main>
+
+      <footer class="footer outer">
+  <div class="inner">
+    <div class="columns">
+      <p class="column">
+        &copy; <time datetime="2023-12-07T19:36:39+01:00">2023</time>. All rights reserved.
+      </p>
+  
+      <p class="column">
+        Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> & <a href="https://github.com/vfvong/jekyll-theme-quartz" target="_blank">Quartz</a>
+      </p>
+  
+      
+      <p class="column">
+        Nützliches Wissen, Helfer und Quick-Tipps rund um Shopware6
+      </p>
+      
+
+      
+      <div class="column social">
+        
+          <a href="mailto:hello@jeffblock.de" target="_blank">
+            <i class="fas fa-envelope" title="Email"></i>
+          </a>
+        
+          <a href="https://twitter.com/block_jeff" target="_blank">
+            <i class="fab fa-twitter" title="Twitter"></i>
+          </a>
+        
+          <a href="https://github.com/gainto" target="_blank">
+            <i class="fab fa-github" title="GitHub"></i>
+          </a>
+        
+      </div>
+      
+    </div>      
+  </div>
+</footer>
+
+    </div>
+
+    
+
+    
+  </body>
+</html>
